@@ -111,3 +111,49 @@ body {
 .animate-rise {
   animation: sheet-rise 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* Net-worth figure reacting to a cash change: a subtle bump, tinted red on
+   a decrease (an increase keeps the accent colour). */
+@keyframes worth-up {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.07);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes worth-down {
+  0% {
+    transform: scale(1);
+    color: var(--color-neg);
+  }
+  35% {
+    transform: scale(1.07);
+    color: var(--color-neg);
+  }
+  100% {
+    transform: scale(1);
+    color: var(--color-accent);
+  }
+}
+
+.animate-worth-up {
+  animation: worth-up 0.45s ease-out;
+}
+
+.animate-worth-down {
+  animation: worth-down 0.55s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade,
+  .animate-rise,
+  .animate-worth-up,
+  .animate-worth-down {
+    animation: none;
+  }
+}

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { computeWorth } from '../domain/networth'
 import type { Board, GameState } from '../domain/types'
 import { formatMoney } from '../util/money'
@@ -20,13 +21,36 @@ export function NetWorthHeader({ board, state, canUndo, onUndo, onMenu }: NetWor
   const worth = computeWorth(board, state)
   const positiveTotal = SEGMENTS.reduce((sum, s) => sum + Math.max(0, worth[s.key]), 0)
 
+  // Pulse the figure when net worth changes (only cash in/out moves it).
+  const prevTotal = useRef(worth.total)
+  const seq = useRef(0)
+  const [pulse, setPulse] = useState<{ key: number; dir: 'up' | 'down' } | null>(null)
+  useEffect(() => {
+    if (prevTotal.current !== worth.total) {
+      const dir = worth.total > prevTotal.current ? 'up' : 'down'
+      seq.current += 1
+      setPulse({ key: seq.current, dir })
+      prevTotal.current = worth.total
+    }
+  }, [worth.total])
+
   return (
     <header className="sticky top-0 z-20 bg-page/95 px-5 pt-4 pb-4 shadow-lg ring-1 ring-line backdrop-blur">
       <div className="mx-auto max-w-md">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs font-medium tracking-wide text-muted uppercase">Net worth</p>
-            <p className="mt-0.5 text-4xl font-bold text-accent tabular-nums">
+            <p
+              key={pulse?.key ?? 'init'}
+              className={
+                'mt-0.5 inline-block origin-left text-4xl font-bold text-accent tabular-nums ' +
+                (pulse?.dir === 'up'
+                  ? 'animate-worth-up'
+                  : pulse?.dir === 'down'
+                    ? 'animate-worth-down'
+                    : '')
+              }
+            >
               {formatMoney(worth.total, board)}
             </p>
           </div>
