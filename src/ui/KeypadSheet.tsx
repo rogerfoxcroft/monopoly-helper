@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Board } from '../domain/types'
 import { formatMoney } from '../util/money'
+import { haptic } from '../util/haptics'
 import { Sheet } from './Sheet'
 
 interface KeypadSheetProps {
@@ -18,6 +19,7 @@ export function KeypadSheet({ open, board, onClose, onSubmit }: KeypadSheetProps
   const amount = digits === '' ? 0 : parseInt(digits, 10)
 
   function press(key: string) {
+    haptic(5)
     if (key === '⌫') {
       setDigits((d) => d.slice(0, -1))
     } else {

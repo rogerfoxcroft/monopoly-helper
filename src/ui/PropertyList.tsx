@@ -3,8 +3,11 @@ import { holdingValue } from '../domain/networth'
 import type { Action } from '../domain/reducer'
 import { MAX_BUILD_LEVEL, type Board, type Holding, type PropertyDef } from '../domain/types'
 import { formatMoney } from '../util/money'
+import { haptic } from '../util/haptics'
 import { GROUP_META, GROUP_ORDER, groupLabel } from './colors'
 import { PropertySheet } from './PropertySheet'
+
+type Filter = 'all' | 'street' | 'station' | 'utility'
 
 interface PropertyListProps {
   board: Board
@@ -36,6 +39,8 @@ export function PropertyList({ board, holdings, dispatch }: PropertyListProps) {
     [holdings],
   )
 
+  const [filter, setFilter] = useState<Filter>('all')
+
   const groups = useMemo(() => {
     return GROUP_ORDER.map((group) => ({
       group,
@@ -43,12 +48,50 @@ export function PropertyList({ board, holdings, dispatch }: PropertyListProps) {
     })).filter((g) => g.items.length > 0)
   }, [board])
 
+  const visibleGroups = useMemo(
+    () =>
+      groups.filter(({ group }) => {
+        if (filter === 'all') return true
+        if (filter === 'street') return group !== 'station' && group !== 'utility'
+        return group === filter
+      }),
+    [groups, filter],
+  )
+
+  const filters: { value: Filter; label: string }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'street', label: 'Properties' },
+    { value: 'station', label: groupLabel(board, 'station') },
+    { value: 'utility', label: groupLabel(board, 'utility') },
+  ]
+
   const selectedDef: PropertyDef | null =
     board.properties.find((p) => p.id === selectedId) ?? null
 
   return (
     <section className="mx-auto max-w-md px-5 pb-4">
-      {groups.map(({ group, items }) => {
+      {/* Category filter */}
+      <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
+        {filters.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => {
+              haptic(8)
+              setFilter(f.value)
+            }}
+            className={
+              'shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap transition ' +
+              (filter === f.value
+                ? 'bg-emerald-600 text-white'
+                : 'bg-surface2 text-muted active:bg-surface3')
+            }
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {visibleGroups.map(({ group, items }) => {
         const meta = GROUP_META[group]
         const ownedCount = items.filter((p) => holdingById.has(p.id)).length
         return (

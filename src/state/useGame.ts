@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { getBoard } from '../boards'
 import { apply, newGame, ReducerError, undo as undoSession, type Action } from '../domain/reducer'
 import type { Board, GameSession } from '../domain/types'
+import { haptic } from '../util/haptics'
 import { clearSession, loadSession, saveSession } from './storage'
 
 export interface UseGame {
@@ -51,9 +52,11 @@ export function useGame(): UseGame {
         try {
           const next = apply(b, s, action)
           setError(null)
+          haptic(12)
           return next
         } catch (e) {
           setError(e instanceof ReducerError ? e.message : 'Something went wrong')
+          haptic([20, 40, 20])
           return s
         }
       })
@@ -63,7 +66,12 @@ export function useGame(): UseGame {
 
   const undo = useCallback(() => {
     setError(null)
-    setSession((s) => (s ? undoSession(s) : s))
+    setSession((s) => {
+      if (!s) return s
+      const next = undoSession(s)
+      if (next !== s) haptic(12)
+      return next
+    })
   }, [])
 
   const reset = useCallback(() => {
