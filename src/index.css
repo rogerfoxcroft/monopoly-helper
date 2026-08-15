@@ -17,4 +17,37 @@ body {
     'Segoe UI',
     Roboto,
     sans-serif;
+  /* Prevent pull-to-refresh / rubber-banding fighting the sticky header. */
+  overscroll-behavior-y: none;
+}
+
+/* Respect iOS safe areas for the sticky bottom bar. */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+}
+
+@keyframes sheet-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-fade {
+  animation: sheet-fade 0.15s ease-out;
+}
+
+.animate-rise {
+  animation: sheet-rise 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
