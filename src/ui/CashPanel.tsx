@@ -23,12 +23,12 @@ export function CashPanel({ board, state, dispatch }: CashPanelProps) {
 
   return (
     <section className="mx-auto max-w-md px-5 py-5">
-      <div className="rounded-2xl bg-slate-800/70 p-5 ring-1 ring-slate-700/60">
+      <div className="rounded-2xl bg-surface p-5 ring-1 ring-line">
         <div className="flex items-baseline justify-between">
-          <span className="text-sm text-slate-400">Cash</span>
+          <span className="text-sm text-muted">Cash</span>
           <span
             className={
-              'text-2xl font-bold tabular-nums ' + (state.cash < 0 ? 'text-red-400' : 'text-slate-100')
+              'text-2xl font-bold tabular-nums ' + (state.cash < 0 ? 'text-red-400' : 'text-ink')
             }
           >
             {formatMoney(state.cash, board)}
@@ -36,7 +36,7 @@ export function CashPanel({ board, state, dispatch }: CashPanelProps) {
         </div>
 
         {/* Add / Take toggle */}
-        <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-slate-900 p-1">
+        <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-page p-1">
           {(['add', 'take'] as const).map((m) => (
             <button
               key={m}
@@ -47,7 +47,7 @@ export function CashPanel({ board, state, dispatch }: CashPanelProps) {
                   ? m === 'add'
                     ? 'bg-emerald-600 text-white'
                     : 'bg-red-600 text-white'
-                  : 'text-slate-400')
+                  : 'text-muted')
               }
             >
               {m}
@@ -61,7 +61,7 @@ export function CashPanel({ board, state, dispatch }: CashPanelProps) {
             <button
               key={d}
               onClick={() => adjust(sign * d)}
-              className="rounded-xl bg-slate-700 py-3 text-sm font-semibold text-slate-100 tabular-nums active:bg-slate-600"
+              className="rounded-xl bg-surface2 py-3 text-sm font-semibold text-ink tabular-nums active:bg-surface3"
             >
               {sign < 0 ? '−' : '+'}
               {formatMoney(d, board)}
@@ -69,7 +69,7 @@ export function CashPanel({ board, state, dispatch }: CashPanelProps) {
           ))}
           <button
             onClick={() => setKeypadOpen(true)}
-            className="rounded-xl bg-slate-700 py-3 text-sm font-semibold text-slate-300 active:bg-slate-600"
+            className="rounded-xl bg-surface2 py-3 text-sm font-semibold text-ink active:bg-surface3"
           >
             123…
           </button>
@@ -78,7 +78,7 @@ export function CashPanel({ board, state, dispatch }: CashPanelProps) {
         {/* Pass GO shortcut */}
         <button
           onClick={() => adjust(200, 'Pass GO')}
-          className="mt-3 w-full rounded-xl bg-emerald-600/20 py-3 text-sm font-semibold text-emerald-300 ring-1 ring-emerald-600/40 active:bg-emerald-600/30"
+          className="mt-3 w-full rounded-xl bg-emerald-500/15 py-3 text-sm font-semibold text-pos ring-1 ring-emerald-600/30 active:bg-emerald-500/25"
         >
           Pass GO · +{formatMoney(200, board)}
         </button>

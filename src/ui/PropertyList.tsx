@@ -3,7 +3,7 @@ import { holdingValue } from '../domain/networth'
 import type { Action } from '../domain/reducer'
 import { MAX_BUILD_LEVEL, type Board, type Holding, type PropertyDef } from '../domain/types'
 import { formatMoney } from '../util/money'
-import { GROUP_META, GROUP_ORDER } from './colors'
+import { GROUP_META, GROUP_ORDER, groupLabel } from './colors'
 import { PropertySheet } from './PropertySheet'
 
 interface PropertyListProps {
@@ -55,13 +55,13 @@ export function PropertyList({ board, holdings, dispatch }: PropertyListProps) {
           <div key={group} className="mb-5">
             <div className="mb-2 flex items-center gap-2">
               <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: meta.swatch }} />
-              <h2 className="text-sm font-semibold text-slate-300">{meta.label}</h2>
-              <span className="text-xs text-slate-500">
+              <h2 className="text-sm font-semibold text-ink">{groupLabel(board, group)}</h2>
+              <span className="text-xs text-faint">
                 {ownedCount}/{items.length}
               </span>
             </div>
 
-            <div className="overflow-hidden rounded-2xl ring-1 ring-slate-700/60">
+            <div className="overflow-hidden rounded-2xl ring-1 ring-line">
               {items.map((p, i) => {
                 const holding = holdingById.get(p.id)
                 const owned = !!holding
@@ -71,8 +71,8 @@ export function PropertyList({ board, holdings, dispatch }: PropertyListProps) {
                     onClick={() => setSelectedId(p.id)}
                     className={
                       'flex w-full items-center gap-3 px-3.5 py-3 text-left transition ' +
-                      (i > 0 ? 'border-t border-slate-700/50 ' : '') +
-                      (owned ? 'bg-slate-800' : 'bg-slate-800/40 active:bg-slate-800')
+                      (i > 0 ? 'border-t border-line ' : '') +
+                      (owned ? 'bg-surface' : 'bg-surface/50 active:bg-surface')
                     }
                   >
                     <span
@@ -83,7 +83,7 @@ export function PropertyList({ board, holdings, dispatch }: PropertyListProps) {
                       <span
                         className={
                           'block truncate text-sm font-medium ' +
-                          (owned ? 'text-slate-100' : 'text-slate-400')
+                          (owned ? 'text-ink' : 'text-muted')
                         }
                       >
                         {p.name}
@@ -93,17 +93,17 @@ export function PropertyList({ board, holdings, dispatch }: PropertyListProps) {
                           <>
                             <BuildingBadge level={holding!.buildLevel} />
                             {holding!.mortgaged && (
-                              <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400">
+                              <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-warn">
                                 MORTGAGED
                               </span>
                             )}
                           </>
                         ) : (
-                          <span className="text-xs text-slate-500">Tap to buy</span>
+                          <span className="text-xs text-faint">Tap to buy</span>
                         )}
                       </span>
                     </span>
-                    <span className="shrink-0 text-right text-sm font-semibold tabular-nums text-slate-200">
+                    <span className="shrink-0 text-right text-sm font-semibold tabular-nums text-ink">
                       {owned ? formatMoney(holdingValue(p, holding!), board) : formatMoney(p.price, board)}
                     </span>
                   </button>

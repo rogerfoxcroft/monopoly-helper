@@ -75,5 +75,6 @@ export const altonTowers: Board = {
   currency: 'GBP',
   locale: 'en-GB',
   startingCash: 1500,
+  groupLabels: { station: 'Destinations' },
   properties,
 }

@@ -67,16 +67,16 @@ export function PropertySheet({ open, board, def, holding, dispatch, onClose }: 
           {buildable && (
             <div className="mt-5">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-300">Buildings</span>
-                <span className="text-xs text-slate-500">{formatMoney(def.houseCost, board)} each</span>
+                <span className="text-sm font-medium text-ink">Buildings</span>
+                <span className="text-xs text-faint">{formatMoney(def.houseCost, board)} each</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl bg-slate-900 p-2">
+              <div className="flex items-center justify-between rounded-xl bg-page p-2">
                 <StepBtn
                   disabled={level === 0}
                   onClick={() => dispatch({ type: 'setBuildLevel', propertyId: def.id, buildLevel: level - 1 })}
                   label="−"
                 />
-                <span className="text-base font-semibold text-slate-100">{buildLabel(level)}</span>
+                <span className="text-base font-semibold text-ink">{buildLabel(level)}</span>
                 <StepBtn
                   disabled={level === MAX_BUILD_LEVEL || holding!.mortgaged}
                   onClick={() => dispatch({ type: 'setBuildLevel', propertyId: def.id, buildLevel: level + 1 })}
@@ -84,7 +84,7 @@ export function PropertySheet({ open, board, def, holding, dispatch, onClose }: 
                 />
               </div>
               {holding!.mortgaged && (
-                <p className="mt-1.5 text-xs text-amber-400">Unmortgage before building.</p>
+                <p className="mt-1.5 text-xs text-warn">Unmortgage before building.</p>
               )}
             </div>
           )}
@@ -95,14 +95,14 @@ export function PropertySheet({ open, board, def, holding, dispatch, onClose }: 
               dispatch({ type: 'setMortgaged', propertyId: def.id, mortgaged: !holding!.mortgaged })
             }
             disabled={!holding!.mortgaged && level > 0}
-            className="mt-5 w-full rounded-xl bg-slate-700 py-3 font-semibold text-slate-100 active:bg-slate-600 disabled:opacity-40"
+            className="mt-5 w-full rounded-xl bg-surface2 py-3 font-semibold text-ink active:bg-surface3 disabled:opacity-40"
           >
             {holding!.mortgaged
               ? `Unmortgage · −${formatMoney(mortgageValue(def), board)}`
               : `Mortgage · +${formatMoney(mortgageValue(def), board)}`}
           </button>
           {!holding!.mortgaged && level > 0 && (
-            <p className="mt-1.5 text-xs text-slate-500">Sell buildings before mortgaging.</p>
+            <p className="mt-1.5 text-xs text-faint">Sell buildings before mortgaging.</p>
           )}
 
           {/* Sell */}
@@ -111,7 +111,7 @@ export function PropertySheet({ open, board, def, holding, dispatch, onClose }: 
               dispatch({ type: 'sellProperty', propertyId: def.id })
               onClose()
             }}
-            className="mt-3 w-full rounded-xl bg-red-600/15 py-3 font-semibold text-red-300 ring-1 ring-red-600/40 active:bg-red-600/25"
+            className="mt-3 w-full rounded-xl bg-red-500/10 py-3 font-semibold text-neg ring-1 ring-red-500/30 active:bg-red-500/20"
           >
             Sell · +{formatMoney(holdingValue(def, holding!), board)}
           </button>
@@ -123,9 +123,9 @@ export function PropertySheet({ open, board, def, holding, dispatch, onClose }: 
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between border-b border-slate-700/60 py-2.5 text-sm last:border-0">
-      <span className="text-slate-400">{label}</span>
-      <span className="font-semibold text-slate-100 tabular-nums">{value}</span>
+    <div className="flex items-center justify-between border-b border-line py-2.5 text-sm last:border-0">
+      <span className="text-muted">{label}</span>
+      <span className="font-semibold text-ink tabular-nums">{value}</span>
     </div>
   )
 }
@@ -135,7 +135,7 @@ function StepBtn({ label, disabled, onClick }: { label: string; disabled: boolea
     <button
       onClick={onClick}
       disabled={disabled}
-      className="h-11 w-11 rounded-lg bg-slate-700 text-2xl font-bold text-slate-100 active:bg-slate-600 disabled:opacity-30"
+      className="h-11 w-11 rounded-lg bg-surface2 text-2xl font-bold text-ink active:bg-surface3 disabled:opacity-30"
     >
       {label}
     </button>

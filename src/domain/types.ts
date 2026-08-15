@@ -38,6 +38,8 @@ export interface Board {
   locale: string
   /** Cash each player starts with. */
   startingCash: number
+  /** Optional per-group display labels, e.g. Alton Towers calls stations "Destinations". */
+  groupLabels?: Partial<Record<Group, string>>
   properties: PropertyDef[]
 }
 

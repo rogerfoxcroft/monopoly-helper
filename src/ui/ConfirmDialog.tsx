@@ -21,11 +21,11 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Sheet open={open} onClose={onCancel} title={title}>
-      <p className="text-sm leading-relaxed text-slate-300">{message}</p>
+      <p className="text-sm leading-relaxed text-ink">{message}</p>
       <div className="mt-6 flex gap-3">
         <button
           onClick={onCancel}
-          className="flex-1 rounded-xl bg-slate-700 py-3 font-semibold text-slate-100 active:bg-slate-600"
+          className="flex-1 rounded-xl bg-surface2 py-3 font-semibold text-ink active:bg-surface3"
         >
           Cancel
         </button>

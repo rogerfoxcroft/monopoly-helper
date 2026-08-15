@@ -34,8 +34,8 @@ export function KeypadSheet({ open, board, onClose, onSubmit }: KeypadSheetProps
 
   return (
     <Sheet open={open} onClose={onClose} title="Enter amount">
-      <div className="mb-4 rounded-2xl bg-slate-900 px-4 py-5 text-center">
-        <span className="text-4xl font-bold text-slate-100 tabular-nums">{formatMoney(amount, board)}</span>
+      <div className="mb-4 rounded-2xl bg-page px-4 py-5 text-center">
+        <span className="text-4xl font-bold text-ink tabular-nums">{formatMoney(amount, board)}</span>
       </div>
 
       <div className="grid grid-cols-3 gap-2.5">
@@ -43,7 +43,7 @@ export function KeypadSheet({ open, board, onClose, onSubmit }: KeypadSheetProps
           <button
             key={k}
             onClick={() => press(k)}
-            className="rounded-xl bg-slate-700 py-4 text-xl font-semibold text-slate-100 active:bg-slate-600"
+            className="rounded-xl bg-surface2 py-4 text-xl font-semibold text-ink active:bg-surface3"
           >
             {k}
           </button>
