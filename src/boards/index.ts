@@ -1,11 +1,9 @@
 import type { Board } from '../domain/types'
+import { altonTowers } from './alton-towers'
 import { standardUk } from './standard-uk'
 
-/**
- * Registry of playable editions. Add a board here once its `properties` are
- * complete (see `alton-towers.ts` for a placeholder awaiting data).
- */
-export const boards: Board[] = [standardUk]
+/** Registry of playable editions, in the order shown to the player. */
+export const boards: Board[] = [standardUk, altonTowers]
 
 export const DEFAULT_BOARD_ID = standardUk.id
 
