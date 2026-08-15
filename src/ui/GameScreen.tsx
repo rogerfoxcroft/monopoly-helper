@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { GameSession } from '../domain/types'
 import type { UseGame } from '../state/useGame'
+import { useTheme, type ThemePref } from '../state/theme'
 import { canUndo as canUndoSession } from '../domain/reducer'
 import { CashPanel } from './CashPanel'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -15,6 +16,7 @@ export function GameScreen({ game }: { game: UseGame }) {
   const { board, error, dispatch, undo, reset, quit, clearError } = game
   const session = game.session as GameSession
   const [dialog, setDialog] = useState<Dialog>(null)
+  const [theme, setTheme] = useTheme()
   const canUndo = canUndoSession(session)
 
   // Auto-dismiss error toasts.
@@ -50,6 +52,10 @@ export function GameScreen({ game }: { game: UseGame }) {
 
       {/* Menu */}
       <Sheet open={dialog === 'menu'} onClose={() => setDialog(null)} title={board.name}>
+        <div className="mb-4">
+          <p className="mb-1.5 text-xs font-medium tracking-wide text-muted uppercase">Theme</p>
+          <ThemeToggle value={theme} onChange={setTheme} />
+        </div>
         <div className="flex flex-col gap-2">
           <MenuItem label="Activity log" onClick={() => setDialog('history')} />
           <MenuItem label="Reset game" onClick={() => setDialog('reset')} />
@@ -94,11 +100,36 @@ export function GameScreen({ game }: { game: UseGame }) {
   )
 }
 
+const THEME_OPTIONS: { value: ThemePref; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+]
+
+function ThemeToggle({ value, onChange }: { value: ThemePref; onChange: (v: ThemePref) => void }) {
+  return (
+    <div className="grid grid-cols-3 gap-1 rounded-xl bg-page p-1">
+      {THEME_OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          className={
+            'rounded-lg py-2 text-sm font-semibold transition ' +
+            (value === opt.value ? 'bg-surface2 text-ink shadow-sm' : 'text-muted')
+          }
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function MenuItem({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-xl bg-slate-700 px-4 py-3.5 text-left font-medium text-slate-100 active:bg-slate-600"
+      className="w-full rounded-xl bg-surface2 px-4 py-3.5 text-left font-medium text-ink active:bg-surface3"
     >
       {label}
     </button>

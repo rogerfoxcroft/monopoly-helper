@@ -1,5 +1,65 @@
 @import 'tailwindcss';
 
+/*
+ * Semantic colour tokens. Light values are the base; dark values are swapped
+ * in under prefers-color-scheme (system) and under [data-theme] (manual
+ * override from the in-app toggle). Utilities like `bg-surface`, `text-ink`
+ * are generated from these by Tailwind's @theme.
+ */
+@theme {
+  --color-page: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-surface2: #e2e8f0;
+  --color-surface3: #cbd5e1;
+  --color-line: #e2e8f0;
+  --color-ink: #0f172a;
+  --color-muted: #475569;
+  --color-faint: #64748b;
+  --color-accent: #059669;
+  --color-pos: #047857;
+  --color-neg: #b91c1c;
+  --color-warn: #b45309;
+}
+
+:root {
+  color-scheme: light;
+}
+
+/* Dark palette, shared by system-dark and the explicit dark toggle. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --color-page: #0f172a;
+    --color-surface: #1e293b;
+    --color-surface2: #334155;
+    --color-surface3: #475569;
+    --color-line: #334155;
+    --color-ink: #f1f5f9;
+    --color-muted: #94a3b8;
+    --color-faint: #64748b;
+    --color-accent: #34d399;
+    --color-pos: #6ee7b7;
+    --color-neg: #fca5a5;
+    --color-warn: #fbbf24;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-page: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface2: #334155;
+  --color-surface3: #475569;
+  --color-line: #334155;
+  --color-ink: #f1f5f9;
+  --color-muted: #94a3b8;
+  --color-faint: #64748b;
+  --color-accent: #34d399;
+  --color-pos: #6ee7b7;
+  --color-neg: #fca5a5;
+  --color-warn: #fbbf24;
+}
+
 html,
 body,
 #root {
@@ -8,8 +68,8 @@ body,
 
 body {
   margin: 0;
-  background-color: #0f172a;
-  color: #f1f5f9;
+  background-color: var(--color-page);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   font-family:
     system-ui,

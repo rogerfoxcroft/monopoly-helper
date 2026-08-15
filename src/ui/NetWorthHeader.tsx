@@ -21,12 +21,12 @@ export function NetWorthHeader({ board, state, canUndo, onUndo, onMenu }: NetWor
   const positiveTotal = SEGMENTS.reduce((sum, s) => sum + Math.max(0, worth[s.key]), 0)
 
   return (
-    <header className="sticky top-0 z-20 bg-slate-900/95 px-5 pt-4 pb-4 shadow-lg ring-1 ring-slate-800 backdrop-blur">
+    <header className="sticky top-0 z-20 bg-page/95 px-5 pt-4 pb-4 shadow-lg ring-1 ring-line backdrop-blur">
       <div className="mx-auto max-w-md">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-medium tracking-wide text-slate-400 uppercase">Net worth</p>
-            <p className="mt-0.5 text-4xl font-bold text-emerald-400 tabular-nums">
+            <p className="text-xs font-medium tracking-wide text-muted uppercase">Net worth</p>
+            <p className="mt-0.5 text-4xl font-bold text-accent tabular-nums">
               {formatMoney(worth.total, board)}
             </p>
           </div>
@@ -34,7 +34,7 @@ export function NetWorthHeader({ board, state, canUndo, onUndo, onMenu }: NetWor
             <button
               onClick={onUndo}
               disabled={!canUndo}
-              className="rounded-full p-2.5 text-slate-300 ring-1 ring-slate-700 active:bg-slate-800 disabled:opacity-30"
+              className="rounded-full p-2.5 text-ink ring-1 ring-line active:bg-surface disabled:opacity-30"
               aria-label="Undo last action"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -44,7 +44,7 @@ export function NetWorthHeader({ board, state, canUndo, onUndo, onMenu }: NetWor
             </button>
             <button
               onClick={onMenu}
-              className="rounded-full p-2.5 text-slate-300 ring-1 ring-slate-700 active:bg-slate-800"
+              className="rounded-full p-2.5 text-ink ring-1 ring-line active:bg-surface"
               aria-label="Menu"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -57,7 +57,7 @@ export function NetWorthHeader({ board, state, canUndo, onUndo, onMenu }: NetWor
         </div>
 
         {/* Split bar */}
-        <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-slate-800">
+        <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-surface">
           {positiveTotal > 0 &&
             SEGMENTS.map((s) => {
               const value = Math.max(0, worth[s.key])
@@ -74,9 +74,9 @@ export function NetWorthHeader({ board, state, canUndo, onUndo, onMenu }: NetWor
         {/* Legend */}
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
           {SEGMENTS.map((s) => (
-            <span key={s.key} className="inline-flex items-center gap-1.5 text-slate-400">
+            <span key={s.key} className="inline-flex items-center gap-1.5 text-muted">
               <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
-              {s.label} <span className="font-medium text-slate-200 tabular-nums">{formatMoney(worth[s.key], board)}</span>
+              {s.label} <span className="font-medium text-ink tabular-nums">{formatMoney(worth[s.key], board)}</span>
             </span>
           ))}
         </div>

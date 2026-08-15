@@ -30,13 +30,13 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
       <div
         role="dialog"
         aria-modal="true"
-        className="animate-rise pb-safe relative z-10 max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-slate-800 shadow-2xl ring-1 ring-slate-700"
+        className="animate-rise pb-safe relative z-10 max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-surface shadow-2xl ring-1 ring-line"
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 rounded-t-3xl bg-slate-800/95 px-5 pt-4 pb-3 backdrop-blur">
-          <div className="min-w-0 text-lg font-semibold text-slate-100">{title}</div>
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 rounded-t-3xl bg-surface/95 px-5 pt-4 pb-3 backdrop-blur">
+          <div className="min-w-0 text-lg font-semibold text-ink">{title}</div>
           <button
             onClick={onClose}
-            className="-mr-2 shrink-0 rounded-full p-2 text-slate-400 hover:bg-slate-700 hover:text-slate-100"
+            className="-mr-2 shrink-0 rounded-full p-2 text-muted hover:bg-surface2 hover:text-ink"
             aria-label="Close"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">

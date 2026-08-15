@@ -1,4 +1,4 @@
-import type { Group } from '../domain/types'
+import type { Board, Group } from '../domain/types'
 
 export interface GroupMeta {
   label: string
@@ -19,6 +19,11 @@ export const GROUP_META: Record<Group, GroupMeta> = {
   darkblue: { label: 'Dark Blue', swatch: '#0072bb', on: '#ffffff' },
   station: { label: 'Stations', swatch: '#334155', on: '#ffffff' },
   utility: { label: 'Utilities', swatch: '#94a3b8', on: '#0f172a' },
+}
+
+/** The label for a group on a given board, honouring edition overrides. */
+export function groupLabel(board: Board, group: Group): string {
+  return board.groupLabels?.[group] ?? GROUP_META[group].label
 }
 
 /** Display order for grouped property lists. */
