@@ -4,6 +4,7 @@ import { computeWealthTax, wealthTaxRange } from '../domain/wealthtax'
 import type { Board, GameState, Variant } from '../domain/types'
 import { formatMoney } from '../util/money'
 import { haptic } from '../util/haptics'
+import { RulesSheet } from './RulesSheet'
 
 interface WealthTaxPanelProps {
   board: Board
@@ -27,6 +28,8 @@ export function WealthTaxPanel({ board, state, variant }: WealthTaxPanelProps) {
   const rule = variant.wealthTax!
   const { min, max } = wealthTaxRange(rule)
   const [players, setPlayers] = useState(() => Math.min(max, Math.max(min, loadPlayers(4))))
+  const [rulesOpen, setRulesOpen] = useState(false)
+  const hasRules = !!variant.rulesSummary || !!variant.rulesPdf
 
   const change = (delta: number) => {
     const next = Math.min(max, Math.max(min, players + delta))
@@ -48,15 +51,18 @@ export function WealthTaxPanel({ board, state, variant }: WealthTaxPanelProps) {
       <div className="rounded-2xl bg-surface p-5 ring-1 ring-line">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-ink">Wealth tax</h2>
-          {variant.rulesPdf && (
-            <a
-              href={`${import.meta.env.BASE_URL}${variant.rulesPdf}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-medium text-accent"
+          {hasRules && (
+            <button
+              onClick={() => setRulesOpen(true)}
+              className="-mr-1 rounded-full p-1 text-muted active:bg-surface2"
+              aria-label="Well Regulated Monopoly rules"
             >
-              Rules PDF ↗
-            </a>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 11v5" strokeLinecap="round" />
+                <circle cx="12" cy="7.75" r="0.6" fill="currentColor" stroke="none" />
+              </svg>
+            </button>
           )}
         </div>
 
@@ -91,6 +97,8 @@ export function WealthTaxPanel({ board, state, variant }: WealthTaxPanelProps) {
           Payable at the end of the round if you hold the highest net worth.
         </p>
       </div>
+
+      <RulesSheet open={rulesOpen} variant={variant} onClose={() => setRulesOpen(false)} />
     </section>
   )
 }

@@ -65,6 +65,12 @@ export interface WealthTaxRule {
   bands: WealthTaxBand[]
 }
 
+/** A section of an in-app rules summary. `body` may contain newlines. */
+export interface RulesSection {
+  heading: string
+  body: string
+}
+
 /**
  * A rules variant layered on top of a board. `standard` changes nothing;
  * others (e.g. Well Regulated Monopoly) tweak cash rules and add features.
@@ -79,6 +85,8 @@ export interface Variant {
   passGo: number
   /** When set, enables the wealth-tax helper. */
   wealthTax?: WealthTaxRule
+  /** Short in-app rules summary, shown behind an (i) button. */
+  rulesSummary?: RulesSection[]
   /** Path (relative to the site base) to a rules PDF, if any. */
   rulesPdf?: string
 }
