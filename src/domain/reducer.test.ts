@@ -131,17 +131,31 @@ describe('property transactions', () => {
   })
 })
 
+describe('house selling returns half', () => {
+  it('building costs full price but removing returns only half', () => {
+    let s = apply(board, fresh(), { type: 'buyProperty', propertyId: 'mayfair' }) // -400 → 1100
+    s = apply(board, s, { type: 'setBuildLevel', propertyId: 'mayfair', buildLevel: 2 }) // -2×200 → 700
+    expect(s.present.cash).toBe(700)
+    const worthAfterBuild = netWorth(board, s.present)
+    s = apply(board, s, { type: 'setBuildLevel', propertyId: 'mayfair', buildLevel: 0 }) // sell 2 @ half(100)
+    expect(s.present.cash).toBe(900) // +2×100
+    expect(netWorth(board, s.present)).toBe(worthAfterBuild - 200) // lost the other half
+    expect(s.log.at(-1)?.label).toContain('Sold buildings')
+  })
+})
+
 describe('net-worth invariance', () => {
-  // Every action except adjustCash is a pure column-shift: it must not change
-  // total net worth. This is the defining property of the face-value model.
+  // Buy, build-up, and mortgage are pure column-shifts that must not change
+  // total net worth (the defining property of the face-value model). Selling
+  // (property or houses) at the bank's half rate is intentionally not neutral.
   const invariantActions: Action[] = [
     { type: 'buyProperty', propertyId: 'mayfair' },
     { type: 'setBuildLevel', propertyId: 'mayfair', buildLevel: 3 },
     { type: 'setBuildLevel', propertyId: 'mayfair', buildLevel: 5 },
-    { type: 'setBuildLevel', propertyId: 'mayfair', buildLevel: 0 },
-    { type: 'setMortgaged', propertyId: 'mayfair', mortgaged: true },
-    { type: 'setMortgaged', propertyId: 'mayfair', mortgaged: false },
-    { type: 'sellProperty', propertyId: 'mayfair', amount: 400 }, // full-value sale is neutral
+    { type: 'buyProperty', propertyId: 'oxford-street' },
+    { type: 'setMortgaged', propertyId: 'oxford-street', mortgaged: true },
+    { type: 'setMortgaged', propertyId: 'oxford-street', mortgaged: false },
+    { type: 'sellProperty', propertyId: 'oxford-street', amount: 300 }, // full-value sale is neutral
   ]
 
   it('holds net worth constant through buy/build/mortgage/sell', () => {

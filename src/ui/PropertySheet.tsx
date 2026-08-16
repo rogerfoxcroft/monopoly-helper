@@ -71,7 +71,9 @@ export function PropertySheet({ open, board, def, holding, dispatch, onClose }: 
             <div className="mt-5">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-medium text-ink">Buildings</span>
-                <span className="text-xs text-faint">{formatMoney(def.houseCost, board)} each</span>
+                <span className="text-xs text-faint">
+                  {formatMoney(def.houseCost, board)} each · sell back {formatMoney(Math.floor(def.houseCost / 2), board)}
+                </span>
               </div>
               <div className="flex items-center justify-between rounded-xl bg-page p-2">
                 <StepBtn

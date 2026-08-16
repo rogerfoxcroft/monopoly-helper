@@ -148,18 +148,22 @@ function reduce(board: Board, state: GameState, action: Action): { state: GameSt
         fail(`Build level must be 0–${MAX_BUILD_LEVEL}`)
       }
       if (level === holding.buildLevel) fail(`${def.name} is already at that build level`)
-      const delta = (level - holding.buildLevel) * def.houseCost // +build cost / -sale return
-      const verb = level > holding.buildLevel ? 'Built on' : 'Sold buildings on'
+      const steps = level - holding.buildLevel
+      // Building costs the full house price; selling back to the bank returns
+      // only half, so removing houses lowers net worth by the other half.
+      const cashDelta =
+        steps > 0 ? -steps * def.houseCost : -steps * Math.floor(def.houseCost / 2)
+      const verb = steps > 0 ? 'Built on' : 'Sold buildings on'
       const suffix = level === MAX_BUILD_LEVEL ? ' → hotel' : ''
       return {
         state: {
           ...state,
-          cash: state.cash - delta,
+          cash: state.cash + cashDelta,
           holdings: state.holdings.map((h) =>
             h.propertyId === action.propertyId ? { ...h, buildLevel: level } : h,
           ),
         },
-        label: `${verb} ${def.name}${suffix} (${formatDelta(-delta, board)})`,
+        label: `${verb} ${def.name}${suffix} (${formatDelta(cashDelta, board)})`,
       }
     }
   }
