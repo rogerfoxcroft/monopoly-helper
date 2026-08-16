@@ -1,18 +1,19 @@
 import { useState } from 'react'
 import type { Action } from '../domain/reducer'
-import type { Board, GameState } from '../domain/types'
+import type { Board, GameState, Variant } from '../domain/types'
 import { formatMoney } from '../util/money'
 import { KeypadSheet } from './KeypadSheet'
 
 interface CashPanelProps {
   board: Board
   state: GameState
+  variant: Variant
   dispatch: (action: Action) => void
 }
 
 const DENOMS = [1, 5, 10, 20, 50, 100, 500]
 
-export function CashPanel({ board, state, dispatch }: CashPanelProps) {
+export function CashPanel({ board, state, variant, dispatch }: CashPanelProps) {
   const [mode, setMode] = useState<'add' | 'take'>('add')
   const [keypadOpen, setKeypadOpen] = useState(false)
 
@@ -77,10 +78,10 @@ export function CashPanel({ board, state, dispatch }: CashPanelProps) {
 
         {/* Pass GO shortcut */}
         <button
-          onClick={() => adjust(200, 'Pass GO')}
+          onClick={() => adjust(variant.passGo, 'Pass GO')}
           className="mt-3 w-full rounded-xl bg-emerald-500/15 py-3 text-sm font-semibold text-pos ring-1 ring-emerald-600/30 active:bg-emerald-500/25"
         >
-          Pass GO · +{formatMoney(200, board)}
+          Pass GO · +{formatMoney(variant.passGo, board)}
         </button>
       </div>
 

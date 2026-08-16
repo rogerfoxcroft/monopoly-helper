@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getBoard } from '../boards'
 import { apply, newGame, ReducerError, undo as undoSession, type Action } from '../domain/reducer'
-import type { Board, GameSession } from '../domain/types'
+import type { Board, GameSession, Variant } from '../domain/types'
+import { getVariant } from '../variants'
 import { haptic } from '../util/haptics'
 import { clearSession, loadSession, saveSession } from './storage'
 
@@ -10,13 +11,17 @@ export interface UseGame {
   session: GameSession | null
   /** The board for the current session, if any. */
   board: Board | undefined
+  /** The rules variant for the current session, if any. */
+  variant: Variant | undefined
   /** Last error message from an invalid action, or null. */
   error: string | null
-  start: (board: Board) => void
+  start: (board: Board, variant: Variant) => void
   dispatch: (action: Action) => void
   undo: () => void
-  /** Reset to the starting point, keeping the same edition. */
+  /** Reset to the starting point, keeping the same edition and variant. */
   reset: () => void
+  /** Switch the rules variant mid-game (keeps cash and properties). */
+  setVariant: (variant: Variant) => void
   /** Abandon the game and return to the edition picker. */
   quit: () => void
   clearError: () => void
@@ -26,6 +31,7 @@ export function useGame(): UseGame {
   const [session, setSession] = useState<GameSession | null>(() => loadSession())
   const [error, setError] = useState<string | null>(null)
   const board = session ? getBoard(session.present.boardId) : undefined
+  const variant = session ? getVariant(session.present.variantId) : undefined
 
   // Persist whenever the session changes.
   const firstRun = useRef(true)
@@ -38,9 +44,9 @@ export function useGame(): UseGame {
     else clearSession()
   }, [session])
 
-  const start = useCallback((b: Board) => {
+  const start = useCallback((b: Board, v: Variant) => {
     setError(null)
-    setSession(newGame(b))
+    setSession(newGame(b, v))
   }, [])
 
   const dispatch = useCallback(
@@ -78,8 +84,13 @@ export function useGame(): UseGame {
     setError(null)
     setSession((s) => {
       const b = s && getBoard(s.present.boardId)
-      return b ? newGame(b) : s
+      return b ? newGame(b, getVariant(s.present.variantId)) : s
     })
+  }, [])
+
+  const setVariant = useCallback((v: Variant) => {
+    setError(null)
+    setSession((s) => (s ? { ...s, present: { ...s.present, variantId: v.id } } : s))
   }, [])
 
   const quit = useCallback(() => {
@@ -89,5 +100,5 @@ export function useGame(): UseGame {
 
   const clearError = useCallback(() => setError(null), [])
 
-  return { session, board, error, start, dispatch, undo, reset, quit, clearError }
+  return { session, board, variant, error, start, dispatch, undo, reset, setVariant, quit, clearError }
 }

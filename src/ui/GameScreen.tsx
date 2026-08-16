@@ -9,11 +9,13 @@ import { HistorySheet } from './HistorySheet'
 import { NetWorthHeader } from './NetWorthHeader'
 import { PropertyList } from './PropertyList'
 import { Sheet } from './Sheet'
+import { VariantsSheet } from './VariantsSheet'
+import { WealthTaxPanel } from './WealthTaxPanel'
 
-type Dialog = null | 'menu' | 'history' | 'reset' | 'quit'
+type Dialog = null | 'menu' | 'history' | 'variants' | 'reset' | 'quit'
 
 export function GameScreen({ game }: { game: UseGame }) {
-  const { board, error, dispatch, undo, reset, quit, clearError } = game
+  const { board, variant, error, dispatch, undo, reset, setVariant, quit, clearError } = game
   const session = game.session as GameSession
   const [dialog, setDialog] = useState<Dialog>(null)
   const [theme, setTheme] = useTheme()
@@ -26,7 +28,7 @@ export function GameScreen({ game }: { game: UseGame }) {
     return () => clearTimeout(t)
   }, [error, clearError])
 
-  if (!board) return null
+  if (!board || !variant) return null
 
   return (
     <div className="min-h-full pb-10">
@@ -38,7 +40,10 @@ export function GameScreen({ game }: { game: UseGame }) {
         onMenu={() => setDialog('menu')}
       />
 
-      <CashPanel board={board} state={session.present} dispatch={dispatch} />
+      <CashPanel board={board} state={session.present} variant={variant} dispatch={dispatch} />
+      {variant.wealthTax && (
+        <WealthTaxPanel board={board} state={session.present} variant={variant} />
+      )}
       <PropertyList board={board} holdings={session.present.holdings} dispatch={dispatch} />
 
       {/* Error toast */}
@@ -57,11 +62,26 @@ export function GameScreen({ game }: { game: UseGame }) {
           <ThemeToggle value={theme} onChange={setTheme} />
         </div>
         <div className="flex flex-col gap-2">
+          <MenuItem
+            label="Variants"
+            detail={variant.name}
+            onClick={() => setDialog('variants')}
+          />
           <MenuItem label="Activity log" onClick={() => setDialog('history')} />
           <MenuItem label="Reset game" onClick={() => setDialog('reset')} />
           <MenuItem label="Change edition" onClick={() => setDialog('quit')} />
         </div>
       </Sheet>
+
+      <VariantsSheet
+        open={dialog === 'variants'}
+        current={variant}
+        onSelect={(v) => {
+          setVariant(v)
+          setDialog(null)
+        }}
+        onClose={() => setDialog(null)}
+      />
 
       <HistorySheet
         open={dialog === 'history'}
@@ -74,7 +94,7 @@ export function GameScreen({ game }: { game: UseGame }) {
       <ConfirmDialog
         open={dialog === 'reset'}
         title="Reset game?"
-        message="This clears all cash, properties and history, returning to the starting balance for this edition. This can't be undone."
+        message="This clears all cash, properties and history, returning to the starting balance for the current edition and rules. This can't be undone."
         confirmLabel="Reset"
         danger
         onConfirm={() => {
@@ -125,13 +145,22 @@ function ThemeToggle({ value, onChange }: { value: ThemePref; onChange: (v: Them
   )
 }
 
-function MenuItem({ label, onClick }: { label: string; onClick: () => void }) {
+function MenuItem({
+  label,
+  detail,
+  onClick,
+}: {
+  label: string
+  detail?: string
+  onClick: () => void
+}) {
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-xl bg-surface2 px-4 py-3.5 text-left font-medium text-ink active:bg-surface3"
+      className="flex w-full items-center justify-between gap-3 rounded-xl bg-surface2 px-4 py-3.5 text-left font-medium text-ink active:bg-surface3"
     >
-      {label}
+      <span>{label}</span>
+      {detail && <span className="truncate text-sm font-normal text-muted">{detail}</span>}
     </button>
   )
 }
