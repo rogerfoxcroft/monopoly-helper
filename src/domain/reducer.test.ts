@@ -73,6 +73,31 @@ describe('property transactions', () => {
     expect(s.present.holdings).toHaveLength(0)
   })
 
+  it('selling with an override amount books a profit to cash and net worth', () => {
+    let s = apply(board, fresh(), { type: 'buyProperty', propertyId: 'mayfair' }) // -400 → 1100
+    const worthBefore = netWorth(board, s.present)
+    s = apply(board, s, { type: 'sellProperty', propertyId: 'mayfair', amount: 600 }) // book 400, +200 profit
+    expect(s.present.cash).toBe(1700) // 1100 + 600
+    expect(netWorth(board, s.present)).toBe(worthBefore + 200)
+    expect(s.log.at(-1)?.label).toContain('profit')
+  })
+
+  it('selling with an override below book books a loss', () => {
+    let s = apply(board, fresh(), { type: 'buyProperty', propertyId: 'mayfair' }) // -400 → 1100
+    const worthBefore = netWorth(board, s.present)
+    s = apply(board, s, { type: 'sellProperty', propertyId: 'mayfair', amount: 250 }) // book 400, -150 loss
+    expect(s.present.cash).toBe(1350) // 1100 + 250
+    expect(netWorth(board, s.present)).toBe(worthBefore - 150)
+    expect(s.log.at(-1)?.label).toContain('loss')
+  })
+
+  it('rejects a negative sale amount', () => {
+    const s = apply(board, fresh(), { type: 'buyProperty', propertyId: 'mayfair' })
+    expect(() => apply(board, s, { type: 'sellProperty', propertyId: 'mayfair', amount: -10 })).toThrow(
+      ReducerError,
+    )
+  })
+
   it('mortgaging pays half and unmortgaging costs half', () => {
     let s = apply(board, fresh(), { type: 'buyProperty', propertyId: 'mayfair' }) // -400 → 1100
     s = apply(board, s, { type: 'setMortgaged', propertyId: 'mayfair', mortgaged: true })

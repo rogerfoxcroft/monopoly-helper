@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import type { Action } from '../domain/reducer'
 import { MAX_BUILD_LEVEL, type Board, type Holding, type PropertyDef } from '../domain/types'
 import { buildingValue, holdingValue, mortgageValue, propertyValue } from '../domain/networth'
 import { formatMoney } from '../util/money'
 import { GROUP_META } from './colors'
+import { SellSheet } from './SellSheet'
 import { Sheet } from './Sheet'
 
 interface PropertySheetProps {
@@ -21,6 +23,7 @@ function buildLabel(level: number): string {
 }
 
 export function PropertySheet({ open, board, def, holding, dispatch, onClose }: PropertySheetProps) {
+  const [sellOpen, setSellOpen] = useState(false)
   if (!def) return <Sheet open={open} onClose={onClose} title="" children={null} />
 
   const meta = GROUP_META[def.group]
@@ -107,14 +110,24 @@ export function PropertySheet({ open, board, def, holding, dispatch, onClose }: 
 
           {/* Sell */}
           <button
-            onClick={() => {
-              dispatch({ type: 'sellProperty', propertyId: def.id })
-              onClose()
-            }}
+            onClick={() => setSellOpen(true)}
             className="mt-3 w-full rounded-xl bg-red-500/10 py-3 font-semibold text-neg ring-1 ring-red-500/30 active:bg-red-500/20"
           >
-            Sell · +{formatMoney(holdingValue(def, holding!), board)}
+            Sell · {formatMoney(holdingValue(def, holding!), board)}
           </button>
+
+          <SellSheet
+            open={sellOpen}
+            board={board}
+            def={def}
+            holding={holding!}
+            onConfirm={(amount) => {
+              dispatch({ type: 'sellProperty', propertyId: def.id, amount })
+              setSellOpen(false)
+              onClose()
+            }}
+            onClose={() => setSellOpen(false)}
+          />
         </div>
       )}
     </Sheet>

@@ -16,7 +16,7 @@ const HISTORY_LIMIT = 50
 export type Action =
   | { type: 'adjustCash'; amount: number; note?: string }
   | { type: 'buyProperty'; propertyId: string }
-  | { type: 'sellProperty'; propertyId: string }
+  | { type: 'sellProperty'; propertyId: string; amount?: number }
   | { type: 'setMortgaged'; propertyId: string; mortgaged: boolean }
   | { type: 'setBuildLevel'; propertyId: string; buildLevel: number }
 
@@ -88,14 +88,27 @@ function reduce(board: Board, state: GameState, action: Action): { state: GameSt
       const def = requireProperty(board, action.propertyId)
       const holding = findHolding(state, action.propertyId)
       if (!holding) fail(`${def.name} is not owned`)
-      const proceeds = holdingValue(def, holding)
+      if (action.amount != null && (!Number.isFinite(action.amount) || action.amount < 0)) {
+        fail('Sale amount must be zero or more')
+      }
+      const book = holdingValue(def, holding)
+      // Default to book value; an override models a negotiated sale to a rival,
+      // where any difference from book is a profit or loss to net worth.
+      const proceeds = action.amount ?? book
+      const diff = proceeds - book
+      const pnl =
+        diff === 0
+          ? ''
+          : diff > 0
+            ? ` · profit ${formatMoney(diff, board)}`
+            : ` · loss ${formatMoney(-diff, board)}`
       return {
         state: {
           ...state,
           cash: state.cash + proceeds,
           holdings: state.holdings.filter((h) => h.propertyId !== action.propertyId),
         },
-        label: `Sold ${def.name} (${formatDelta(proceeds, board)})`,
+        label: `Sold ${def.name} (${formatDelta(proceeds, board)})${pnl}`,
       }
     }
 
