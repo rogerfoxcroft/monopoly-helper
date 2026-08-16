@@ -1,6 +1,6 @@
 import { getProperty } from '../boards'
 import { formatDelta, formatMoney } from '../util/money'
-import { holdingValue, mortgageValue } from './networth'
+import { defaultSaleValue, holdingValue, mortgageValue } from './networth'
 import {
   MAX_BUILD_LEVEL,
   type Board,
@@ -92,9 +92,10 @@ function reduce(board: Board, state: GameState, action: Action): { state: GameSt
         fail('Sale amount must be zero or more')
       }
       const book = holdingValue(def, holding)
-      // Default to book value; an override models a negotiated sale to a rival,
-      // where any difference from book is a profit or loss to net worth.
-      const proceeds = action.amount ?? book
+      // Default to the bank rate (half value); an override models a negotiated
+      // sale to a rival. Either way, the difference from the holding's full
+      // value is a profit or loss to net worth.
+      const proceeds = action.amount ?? defaultSaleValue(def, holding)
       const diff = proceeds - book
       const pnl =
         diff === 0

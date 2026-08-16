@@ -37,6 +37,15 @@ export function holdingValue(def: PropertyDef, holding: Holding): number {
   return propertyValue(def, holding) + buildingValue(def, holding)
 }
 
+/**
+ * Cash a sale yields by default: half the holding's full value (the bank
+ * buy-back rate). Selling to another player can beat this — hence the
+ * overridable amount on the sell action.
+ */
+export function defaultSaleValue(def: PropertyDef, holding: Holding): number {
+  return Math.floor(holdingValue(def, holding) / 2)
+}
+
 function defs(board: Board): Map<string, PropertyDef> {
   return new Map(board.properties.map((p) => [p.id, p]))
 }

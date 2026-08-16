@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { holdingValue } from '../domain/networth'
+import { defaultSaleValue, holdingValue } from '../domain/networth'
 import type { Board, Holding, PropertyDef } from '../domain/types'
 import { formatMoney } from '../util/money'
 import { haptic } from '../util/haptics'
@@ -17,18 +17,19 @@ interface SellSheetProps {
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0', '⌫']
 
 export function SellSheet({ open, board, def, holding, onConfirm, onClose }: SellSheetProps) {
-  const book = def && holding ? holdingValue(def, holding) : 0
-  const [digits, setDigits] = useState(String(book))
+  const full = def && holding ? holdingValue(def, holding) : 0
+  const half = def && holding ? defaultSaleValue(def, holding) : 0
+  const [digits, setDigits] = useState(String(half))
 
-  // Re-seed with book value whenever the sheet (re)opens for a property.
+  // Re-seed with the default (bank) sale value whenever the sheet reopens.
   useEffect(() => {
-    if (open) setDigits(String(book))
-  }, [open, book])
+    if (open) setDigits(String(half))
+  }, [open, half])
 
   if (!def || !holding) return <Sheet open={open} onClose={onClose} title="" children={null} />
 
   const amount = digits === '' ? 0 : parseInt(digits, 10)
-  const diff = amount - book
+  const diff = amount - full
 
   function press(key: string) {
     haptic(5)
@@ -38,14 +39,20 @@ export function SellSheet({ open, board, def, holding, onConfirm, onClose }: Sel
 
   return (
     <Sheet open={open} onClose={onClose} title={`Sell ${def.name}`}>
-      <div className="mb-3 flex items-center justify-between text-sm">
-        <span className="text-muted">Book value</span>
-        <button
-          onClick={() => setDigits(String(book))}
-          className="font-semibold text-accent tabular-nums"
-        >
-          {formatMoney(book, board)} · reset
-        </button>
+      {/* Quick amounts: bank rate (half) vs a full-value trade */}
+      <div className="mb-3 grid grid-cols-2 gap-2">
+        <QuickChip
+          label="Sell to bank"
+          value={formatMoney(half, board)}
+          active={amount === half}
+          onClick={() => setDigits(String(half))}
+        />
+        <QuickChip
+          label="Full value"
+          value={formatMoney(full, board)}
+          active={amount === full}
+          onClick={() => setDigits(String(full))}
+        />
       </div>
 
       <div className="rounded-2xl bg-page px-4 py-5 text-center">
@@ -53,11 +60,11 @@ export function SellSheet({ open, board, def, holding, onConfirm, onClose }: Sel
         <div className="mt-1 text-4xl font-bold text-ink tabular-nums">{formatMoney(amount, board)}</div>
         <div className="mt-1 text-sm font-medium tabular-nums">
           {diff === 0 ? (
-            <span className="text-faint">At book value</span>
+            <span className="text-faint">No change to net worth</span>
           ) : diff > 0 ? (
-            <span className="text-pos">Profit {formatMoney(diff, board)}</span>
+            <span className="text-pos">Net worth +{formatMoney(diff, board)}</span>
           ) : (
-            <span className="text-neg">Loss {formatMoney(-diff, board)}</span>
+            <span className="text-neg">Net worth −{formatMoney(-diff, board)}</span>
           )}
         </div>
       </div>
@@ -81,5 +88,30 @@ export function SellSheet({ open, board, def, holding, onConfirm, onClose }: Sel
         Sell for {formatMoney(amount, board)}
       </button>
     </Sheet>
+  )
+}
+
+function QuickChip({
+  label,
+  value,
+  active,
+  onClick,
+}: {
+  label: string
+  value: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={
+        'rounded-xl px-3 py-2.5 text-left ring-1 transition ' +
+        (active ? 'bg-surface2 ring-accent' : 'bg-surface2 ring-line')
+      }
+    >
+      <span className="block text-xs text-muted">{label}</span>
+      <span className="block text-base font-bold text-ink tabular-nums">{value}</span>
+    </button>
   )
 }
