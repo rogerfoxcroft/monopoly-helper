@@ -114,6 +114,8 @@ export interface GameSession {
   past: GameState[]
   log: LogEntry[]
   nextLogId: number
+  /** Epoch ms when this game began (set on new game / reset). */
+  startedAt: number
 }
 
 /** Max build level: 4 houses then a hotel. */

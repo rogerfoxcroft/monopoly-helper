@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { computeWorth } from '../domain/networth'
 import type { Board, GameState } from '../domain/types'
 import { formatMoney } from '../util/money'
+import { Timer } from './Timer'
 
 interface NetWorthHeaderProps {
   board: Board
   state: GameState
+  startedAt: number
   canUndo: boolean
   onUndo: () => void
   onMenu: () => void
@@ -17,7 +19,7 @@ const SEGMENTS = [
   { key: 'buildings', label: 'Houses', color: '#f59e0b' },
 ] as const
 
-export function NetWorthHeader({ board, state, canUndo, onUndo, onMenu }: NetWorthHeaderProps) {
+export function NetWorthHeader({ board, state, startedAt, canUndo, onUndo, onMenu }: NetWorthHeaderProps) {
   const worth = computeWorth(board, state)
   const positiveTotal = SEGMENTS.reduce((sum, s) => sum + Math.max(0, worth[s.key]), 0)
 
@@ -39,7 +41,10 @@ export function NetWorthHeader({ board, state, canUndo, onUndo, onMenu }: NetWor
       <div className="mx-auto max-w-md">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-medium tracking-wide text-muted uppercase">Net worth</p>
+            <p className="flex items-center gap-2 text-xs font-medium tracking-wide text-muted uppercase">
+              Net worth
+              <Timer startedAt={startedAt} />
+            </p>
             <p
               key={pulse?.key ?? 'init'}
               className={

@@ -20,8 +20,6 @@ export interface UseGame {
   undo: () => void
   /** Reset to the starting point, keeping the same edition and variant. */
   reset: () => void
-  /** Switch the rules variant mid-game (keeps cash and properties). */
-  setVariant: (variant: Variant) => void
   /** Abandon the game and return to the edition picker. */
   quit: () => void
   clearError: () => void
@@ -88,11 +86,6 @@ export function useGame(): UseGame {
     })
   }, [])
 
-  const setVariant = useCallback((v: Variant) => {
-    setError(null)
-    setSession((s) => (s ? { ...s, present: { ...s.present, variantId: v.id } } : s))
-  }, [])
-
   const quit = useCallback(() => {
     setError(null)
     setSession(null)
@@ -100,5 +93,5 @@ export function useGame(): UseGame {
 
   const clearError = useCallback(() => setError(null), [])
 
-  return { session, board, variant, error, start, dispatch, undo, reset, setVariant, quit, clearError }
+  return { session, board, variant, error, start, dispatch, undo, reset, quit, clearError }
 }

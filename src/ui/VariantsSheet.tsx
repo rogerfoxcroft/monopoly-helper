@@ -49,8 +49,7 @@ export function VariantsSheet({ open, current, onSelect, onClose }: VariantsShee
         })}
       </div>
       <p className="mt-4 text-xs text-faint">
-        Switching keeps your current cash and properties. Starting cash only changes when you reset or
-        start a new game.
+        Switching variant starts a new game with that variant's rules.
       </p>
     </Sheet>
   )
