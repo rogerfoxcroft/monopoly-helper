@@ -1,4 +1,5 @@
 import type { GameSession } from '../domain/types'
+import { DEFAULT_VARIANT_ID } from '../variants'
 
 const KEY = 'monopoly-helper'
 const VERSION = 1
@@ -15,6 +16,10 @@ export function loadSession(): GameSession | null {
     if (!raw) return null
     const parsed = JSON.parse(raw) as Persisted
     if (parsed.version !== VERSION || !parsed.session?.present) return null
+    // Backfill fields added after a game may have been saved.
+    if (!parsed.session.present.variantId) {
+      parsed.session.present.variantId = DEFAULT_VARIANT_ID
+    }
     return parsed.session
   } catch {
     return null

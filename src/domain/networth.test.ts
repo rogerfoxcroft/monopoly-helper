@@ -6,7 +6,7 @@ import type { GameState } from './types'
 const board = standardUk
 
 function state(partial: Partial<GameState>): GameState {
-  return { boardId: board.id, cash: 0, holdings: [], ...partial }
+  return { boardId: board.id, variantId: 'standard', cash: 0, holdings: [], ...partial }
 }
 
 describe('computeWorth', () => {

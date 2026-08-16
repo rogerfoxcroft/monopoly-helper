@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { standardUk } from '../boards/standard-uk'
+import { STANDARD_VARIANT, WELL_REGULATED_VARIANT } from '../variants'
 import { netWorth } from './networth'
 import { apply, canUndo, newGame, ReducerError, reset, undo, type Action } from './reducer'
 import type { GameSession } from './types'
@@ -7,7 +8,7 @@ import type { GameSession } from './types'
 const board = standardUk
 
 function fresh(): GameSession {
-  return newGame(board)
+  return newGame(board, STANDARD_VARIANT)
 }
 
 describe('newGame / reset', () => {
@@ -21,10 +22,16 @@ describe('newGame / reset', () => {
   it('reset returns to the starting point', () => {
     let s = fresh()
     s = apply(board, s, { type: 'adjustCash', amount: -400 })
-    s = reset(board)
+    s = reset(board, STANDARD_VARIANT)
     expect(s.present.cash).toBe(1500)
     expect(s.log).toEqual([])
     expect(canUndo(s)).toBe(false)
+  })
+
+  it('applies the variant starting cash override', () => {
+    const s = newGame(board, WELL_REGULATED_VARIANT)
+    expect(s.present.cash).toBe(1000)
+    expect(s.present.variantId).toBe('well-regulated')
   })
 })
 

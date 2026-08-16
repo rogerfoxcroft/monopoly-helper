@@ -53,9 +53,40 @@ export interface Holding {
   buildLevel: number
 }
 
+/** A band of the wealth tax: `rate` applies for player counts in [min, max]. */
+export interface WealthTaxBand {
+  minPlayers: number
+  maxPlayers: number
+  /** Fraction of the leader's net worth, e.g. 0.1 for 10%. */
+  rate: number
+}
+
+export interface WealthTaxRule {
+  bands: WealthTaxBand[]
+}
+
+/**
+ * A rules variant layered on top of a board. `standard` changes nothing;
+ * others (e.g. Well Regulated Monopoly) tweak cash rules and add features.
+ */
+export interface Variant {
+  id: string
+  name: string
+  description: string
+  /** Overrides the board's starting cash when set. */
+  startingCash?: number
+  /** Amount collected on passing GO. */
+  passGo: number
+  /** When set, enables the wealth-tax helper. */
+  wealthTax?: WealthTaxRule
+  /** Path (relative to the site base) to a rules PDF, if any. */
+  rulesPdf?: string
+}
+
 /** The mutable, savable state of a single game. */
 export interface GameState {
   boardId: string
+  variantId: string
   cash: number
   holdings: Holding[]
 }

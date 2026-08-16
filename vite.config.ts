@@ -11,7 +11,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['apple-touch-icon.png', 'favicon-32.png'],
+      includeAssets: ['apple-touch-icon.png', 'favicon-32.png', 'well-regulated-monopoly.pdf'],
       manifest: {
         name: 'Monopoly Helper',
         short_name: 'Monopoly',

@@ -7,6 +7,7 @@ import {
   type GameSession,
   type GameState,
   type Holding,
+  type Variant,
 } from './types'
 
 /** How many undo snapshots to retain. */
@@ -28,18 +29,19 @@ function fail(message: string): never {
 
 // ---- session lifecycle -----------------------------------------------------
 
-export function newGame(board: Board): GameSession {
+export function newGame(board: Board, variant: Variant): GameSession {
+  const startingCash = variant.startingCash ?? board.startingCash
   return {
-    present: { boardId: board.id, cash: board.startingCash, holdings: [] },
+    present: { boardId: board.id, variantId: variant.id, cash: startingCash, holdings: [] },
     past: [],
     log: [],
     nextLogId: 1,
   }
 }
 
-/** Reset to the starting point of the session's board. */
-export function reset(board: Board): GameSession {
-  return newGame(board)
+/** Reset to the starting point of the session's board and variant. */
+export function reset(board: Board, variant: Variant): GameSession {
+  return newGame(board, variant)
 }
 
 // ---- helpers ---------------------------------------------------------------
