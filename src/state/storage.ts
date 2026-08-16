@@ -20,6 +20,9 @@ export function loadSession(): GameSession | null {
     if (!parsed.session.present.variantId) {
       parsed.session.present.variantId = DEFAULT_VARIANT_ID
     }
+    if (typeof parsed.session.startedAt !== 'number') {
+      parsed.session.startedAt = Date.now()
+    }
     return parsed.session
   } catch {
     return null

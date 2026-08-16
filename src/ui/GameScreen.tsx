@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { GameSession } from '../domain/types'
+import type { GameSession, Variant } from '../domain/types'
 import type { UseGame } from '../state/useGame'
 import { useTheme, type ThemePref } from '../state/theme'
 import { canUndo as canUndoSession } from '../domain/reducer'
@@ -15,9 +15,10 @@ import { WealthTaxPanel } from './WealthTaxPanel'
 type Dialog = null | 'menu' | 'history' | 'variants' | 'reset' | 'quit'
 
 export function GameScreen({ game }: { game: UseGame }) {
-  const { board, variant, error, dispatch, undo, reset, setVariant, quit, clearError } = game
+  const { board, variant, error, start, dispatch, undo, reset, quit, clearError } = game
   const session = game.session as GameSession
   const [dialog, setDialog] = useState<Dialog>(null)
+  const [pendingVariant, setPendingVariant] = useState<Variant | null>(null)
   const [theme, setTheme] = useTheme()
   const canUndo = canUndoSession(session)
 
@@ -35,6 +36,7 @@ export function GameScreen({ game }: { game: UseGame }) {
       <NetWorthHeader
         board={board}
         state={session.present}
+        startedAt={session.startedAt}
         canUndo={canUndo}
         onUndo={undo}
         onMenu={() => setDialog('menu')}
@@ -77,10 +79,27 @@ export function GameScreen({ game }: { game: UseGame }) {
         open={dialog === 'variants'}
         current={variant}
         onSelect={(v) => {
-          setVariant(v)
           setDialog(null)
+          if (v.id !== variant.id) setPendingVariant(v)
         }}
         onClose={() => setDialog(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingVariant !== null}
+        title="Switch variant?"
+        message={
+          pendingVariant
+            ? `Switching to ${pendingVariant.name} starts a new game — all cash, properties and history for the current game will be cleared, and the timer restarts.`
+            : ''
+        }
+        confirmLabel="Switch & reset"
+        danger
+        onConfirm={() => {
+          if (pendingVariant) start(board, pendingVariant)
+          setPendingVariant(null)
+        }}
+        onCancel={() => setPendingVariant(null)}
       />
 
       <HistorySheet

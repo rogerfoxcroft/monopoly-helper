@@ -29,19 +29,20 @@ function fail(message: string): never {
 
 // ---- session lifecycle -----------------------------------------------------
 
-export function newGame(board: Board, variant: Variant): GameSession {
+export function newGame(board: Board, variant: Variant, now: number = Date.now()): GameSession {
   const startingCash = variant.startingCash ?? board.startingCash
   return {
     present: { boardId: board.id, variantId: variant.id, cash: startingCash, holdings: [] },
     past: [],
     log: [],
     nextLogId: 1,
+    startedAt: now,
   }
 }
 
 /** Reset to the starting point of the session's board and variant. */
-export function reset(board: Board, variant: Variant): GameSession {
-  return newGame(board, variant)
+export function reset(board: Board, variant: Variant, now: number = Date.now()): GameSession {
+  return newGame(board, variant, now)
 }
 
 // ---- helpers ---------------------------------------------------------------
@@ -162,6 +163,7 @@ export function apply(board: Board, session: GameSession, action: Action): GameS
     past,
     log: [...session.log, { id: session.nextLogId, label }],
     nextLogId: session.nextLogId + 1,
+    startedAt: session.startedAt,
   }
 }
 
