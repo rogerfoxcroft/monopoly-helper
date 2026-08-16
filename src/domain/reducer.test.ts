@@ -63,13 +63,15 @@ describe('property transactions', () => {
     expect(() => apply(board, s, { type: 'buyProperty', propertyId: 'mayfair' })).toThrow(ReducerError)
   })
 
-  it('selling returns full current value including buildings', () => {
+  it('selling defaults to half the full value (bank rate)', () => {
     let s = fresh()
     s = apply(board, s, { type: 'buyProperty', propertyId: 'old-kent-road' }) // -60
     s = apply(board, s, { type: 'setBuildLevel', propertyId: 'old-kent-road', buildLevel: 2 }) // -100
     const before = s.present.cash
-    s = apply(board, s, { type: 'sellProperty', propertyId: 'old-kent-road' })
-    expect(s.present.cash).toBe(before + 60 + 100) // price back + 2 houses back
+    const worthBefore = netWorth(board, s.present)
+    s = apply(board, s, { type: 'sellProperty', propertyId: 'old-kent-road' }) // full 160 -> half 80
+    expect(s.present.cash).toBe(before + 80)
+    expect(netWorth(board, s.present)).toBe(worthBefore - 80) // lost the other half
     expect(s.present.holdings).toHaveLength(0)
   })
 
@@ -139,7 +141,7 @@ describe('net-worth invariance', () => {
     { type: 'setBuildLevel', propertyId: 'mayfair', buildLevel: 0 },
     { type: 'setMortgaged', propertyId: 'mayfair', mortgaged: true },
     { type: 'setMortgaged', propertyId: 'mayfair', mortgaged: false },
-    { type: 'sellProperty', propertyId: 'mayfair' },
+    { type: 'sellProperty', propertyId: 'mayfair', amount: 400 }, // full-value sale is neutral
   ]
 
   it('holds net worth constant through buy/build/mortgage/sell', () => {

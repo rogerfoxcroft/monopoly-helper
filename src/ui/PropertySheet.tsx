@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Action } from '../domain/reducer'
 import { MAX_BUILD_LEVEL, type Board, type Holding, type PropertyDef } from '../domain/types'
-import { buildingValue, holdingValue, mortgageValue, propertyValue } from '../domain/networth'
+import { buildingValue, defaultSaleValue, holdingValue, mortgageValue, propertyValue } from '../domain/networth'
 import { formatMoney } from '../util/money'
 import { GROUP_META } from './colors'
 import { SellSheet } from './SellSheet'
@@ -113,7 +113,7 @@ export function PropertySheet({ open, board, def, holding, dispatch, onClose }: 
             onClick={() => setSellOpen(true)}
             className="mt-3 w-full rounded-xl bg-red-500/10 py-3 font-semibold text-neg ring-1 ring-red-500/30 active:bg-red-500/20"
           >
-            Sell · {formatMoney(holdingValue(def, holding!), board)}
+            Sell · from {formatMoney(defaultSaleValue(def, holding!), board)}
           </button>
 
           <SellSheet

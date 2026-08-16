@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { standardUk } from '../boards/standard-uk'
-import { computeWorth, mortgageValue, netWorth } from './networth'
+import { computeWorth, defaultSaleValue, mortgageValue, netWorth } from './networth'
 import type { GameState } from './types'
 
 const board = standardUk
@@ -51,5 +51,13 @@ describe('mortgageValue', () => {
     for (const def of board.properties) {
       expect(mortgageValue(def)).toBe(def.price / 2)
     }
+  })
+})
+
+describe('defaultSaleValue', () => {
+  it('is half the full holding value (property + buildings)', () => {
+    const def = board.properties.find((p) => p.id === 'old-kent-road')!
+    // 60 price + 2 houses × 50 = 160 full → 80 half
+    expect(defaultSaleValue(def, { propertyId: def.id, mortgaged: false, buildLevel: 2 })).toBe(80)
   })
 })
