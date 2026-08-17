@@ -4,10 +4,12 @@ import type { UseGame } from '../state/useGame'
 import { useTheme, type ThemePref } from '../state/theme'
 import { canUndo as canUndoSession } from '../domain/reducer'
 import type { RosterEntry } from '../net/protocol'
+import type { RoundTax } from '../domain/wealthtax'
 import { CashPanel } from './CashPanel'
 import { ConfirmDialog } from './ConfirmDialog'
 import { HistorySheet } from './HistorySheet'
 import { Leaderboard } from './mp/Leaderboard'
+import { WealthTaxHostPanel } from './mp/WealthTaxHostPanel'
 import { NetWorthHeader } from './NetWorthHeader'
 import { PropertyList } from './PropertyList'
 import { Sheet } from './Sheet'
@@ -21,7 +23,20 @@ export interface MultiplayerView {
   meId: string
 }
 
-export function GameScreen({ game, multiplayer }: { game: UseGame; multiplayer?: MultiplayerView }) {
+export interface HostTaxView {
+  preview: RoundTax | null
+  apply: () => void
+}
+
+export function GameScreen({
+  game,
+  multiplayer,
+  hostTax,
+}: {
+  game: UseGame
+  multiplayer?: MultiplayerView
+  hostTax?: HostTaxView
+}) {
   const { board, variant, error, start, dispatch, undo, reset, quit, clearError } = game
   const session = game.session as GameSession
   const [dialog, setDialog] = useState<Dialog>(null)
@@ -54,6 +69,7 @@ export function GameScreen({ game, multiplayer }: { game: UseGame; multiplayer?:
           <Leaderboard roster={multiplayer.roster} board={board} meId={multiplayer.meId} />
         </div>
       )}
+      {hostTax && <WealthTaxHostPanel board={board} preview={hostTax.preview} onApply={hostTax.apply} />}
 
       <CashPanel board={board} state={session.present} variant={variant} dispatch={dispatch} />
       {variant.wealthTax && !multiplayer && (
