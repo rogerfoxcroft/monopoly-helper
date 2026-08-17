@@ -11,6 +11,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // We register the service worker manually in main.tsx so we can poll for
+      // updates while the app is open (see registerSW there).
+      injectRegister: false,
       includeAssets: ['apple-touch-icon.png', 'favicon-32.png', 'well-regulated-monopoly.pdf'],
       manifest: {
         name: 'Monopoly Helper',
