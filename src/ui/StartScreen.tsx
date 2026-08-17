@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { boards } from '../boards'
 import { variants, STANDARD_VARIANT } from '../variants'
 import { formatMoney } from '../util/money'
+import { BackBar } from './BackBar'
 import { GROUP_META } from './colors'
 import type { Board, Variant } from '../domain/types'
 
 interface StartScreenProps {
   onStart: (board: Board, variant: Variant) => void
+  onBack: () => void
 }
 
 /** A little colour strip previewing a board's property groups. */
@@ -21,15 +23,13 @@ function ColourStrip({ board }: { board: Board }) {
   )
 }
 
-export function StartScreen({ onStart }: StartScreenProps) {
+export function StartScreen({ onStart, onBack }: StartScreenProps) {
   const [variant, setVariant] = useState<Variant>(STANDARD_VARIANT)
 
   return (
-    <main className="mx-auto flex min-h-full max-w-md flex-col px-5 py-10">
-      <header className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-ink">Monopoly Helper</h1>
-        <p className="mt-2 text-sm text-muted">Track your worth, turn by turn. Pick your rules and edition.</p>
-      </header>
+    <main className="mx-auto flex min-h-full max-w-md flex-col px-5 py-6">
+      <BackBar title="Single player" onBack={onBack} />
+      <p className="mt-2 mb-6 text-sm text-muted">Pick your rules and edition to begin.</p>
 
       {/* Variant / rules selector */}
       <div className="mb-6">
