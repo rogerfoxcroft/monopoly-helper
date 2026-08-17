@@ -71,7 +71,7 @@ export function GameScreen({ game }: { game: UseGame }) {
           />
           <MenuItem label="Activity log" onClick={() => setDialog('history')} />
           <MenuItem label="Reset game" onClick={() => setDialog('reset')} />
-          <MenuItem label="Change edition" onClick={() => setDialog('quit')} />
+          <MenuItem label="Leave game" onClick={() => setDialog('quit')} />
         </div>
       </Sheet>
 
@@ -125,9 +125,9 @@ export function GameScreen({ game }: { game: UseGame }) {
 
       <ConfirmDialog
         open={dialog === 'quit'}
-        title="Change edition?"
-        message="This ends the current game and returns to the edition picker. Your current game will be lost."
-        confirmLabel="Change edition"
+        title="Leave game?"
+        message="This ends the current game and returns to the main menu. Your current game will be lost."
+        confirmLabel="Leave game"
         danger
         onConfirm={() => {
           quit()
