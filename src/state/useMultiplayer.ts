@@ -10,6 +10,12 @@ export interface Welcome {
   variantId: string
 }
 
+export interface PendingTax {
+  seq: number
+  delta: number
+  label: string
+}
+
 export interface UseMultiplayer {
   role: MpRole | null
   me: PlayerInfo | null
@@ -26,6 +32,10 @@ export interface UseMultiplayer {
   // both
   sendWorth: (worth: PlayerWorth) => void
   leave: () => void
+  // host: send per-player tax deltas; returns the host's own delta
+  applyHostTax: (deltas: Map<string, number>, label: string) => number
+  // client: the most recent tax delta the host pushed, for the game to apply
+  pendingTax: PendingTax | null
 }
 
 export function useMultiplayer(): UseMultiplayer {
@@ -34,9 +44,11 @@ export function useMultiplayer(): UseMultiplayer {
   const [roster, setRoster] = useState<RosterEntry[]>([])
   const [welcome, setWelcome] = useState<Welcome | null>(null)
   const [connected, setConnected] = useState(false)
+  const [pendingTax, setPendingTax] = useState<PendingTax | null>(null)
 
   const hostRef = useRef<HostRoom | null>(null)
   const clientRef = useRef<JoinClient | null>(null)
+  const taxSeq = useRef(0)
 
   const startHost = useCallback((name: string, boardId: string, variantId: string) => {
     const info: PlayerInfo = { id: genId(), name: name.trim() || 'Host', color: playerColor(0) }
@@ -70,7 +82,10 @@ export function useMultiplayer(): UseMultiplayer {
         setConnected(true)
       },
       onRoster: setRoster,
-      onTax: () => {}, // wired to the game in a later phase
+      onTax: (delta, label) => {
+        taxSeq.current += 1
+        setPendingTax({ seq: taxSeq.current, delta, label })
+      },
       onClose: () => setConnected(false),
     })
     clientRef.current = client
@@ -86,6 +101,10 @@ export function useMultiplayer(): UseMultiplayer {
   const sendWorth = useCallback((worth: PlayerWorth) => {
     hostRef.current?.setHostWorth(worth)
     clientRef.current?.sendWorth(worth)
+  }, [])
+
+  const applyHostTax = useCallback((deltas: Map<string, number>, label: string) => {
+    return hostRef.current?.sendTax(deltas, label) ?? 0
   }, [])
 
   const leave = useCallback(() => {
@@ -113,5 +132,7 @@ export function useMultiplayer(): UseMultiplayer {
     acceptInvite,
     sendWorth,
     leave,
+    applyHostTax,
+    pendingTax,
   }
 }
