@@ -1,43 +1,19 @@
 import { useState } from 'react'
-import { useMultiplayer } from '../../state/useMultiplayer'
+import type { UseMultiplayer } from '../../state/useMultiplayer'
 import { BackBar } from '../BackBar'
 import { QrCode } from './QrCode'
 import { QrScanner } from './QrScanner'
-import { RosterList } from './RosterList'
 
 interface JoinFlowProps {
+  mp: UseMultiplayer
   onExit: () => void
 }
 
-export function JoinFlow({ onExit }: JoinFlowProps) {
-  const mp = useMultiplayer()
+export function JoinFlow({ mp, onExit }: JoinFlowProps) {
   const [name, setName] = useState('')
   const [step, setStep] = useState<'setup' | 'scan' | 'answer'>('setup')
   const [answer, setAnswer] = useState('')
   const [error, setError] = useState<string | null>(null)
-
-  const exit = () => {
-    mp.leave()
-    onExit()
-  }
-
-  // Once the host welcomes us, show the connected roster regardless of step.
-  if (mp.connected && mp.role === 'client') {
-    return (
-      <main className="mx-auto flex min-h-full max-w-md flex-col px-5 py-6">
-        <BackBar title="Connected" onBack={exit} />
-        <div className="mt-6 rounded-2xl bg-surface p-5 ring-1 ring-line">
-          <p className="text-center text-sm font-semibold text-pos">You're in!</p>
-          <div className="mt-4">
-            <RosterList roster={mp.roster} meId={mp.me?.id} />
-          </div>
-        </div>
-        <p className="mt-auto pt-8 text-center text-xs text-faint">
-          Live gameplay sync (leaderboard &amp; wealth tax) arrives in the next update.
-        </p>
-      </main>
-    )
-  }
 
   async function onScanOffer(code: string) {
     setError(null)
@@ -52,7 +28,7 @@ export function JoinFlow({ onExit }: JoinFlowProps) {
 
   return (
     <main className="mx-auto flex min-h-full max-w-md flex-col px-5 py-6">
-      <BackBar title="Join a game" onBack={exit} />
+      <BackBar title="Join a game" onBack={onExit} />
 
       {step === 'setup' && (
         <>
