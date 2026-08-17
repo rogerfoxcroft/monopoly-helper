@@ -1,43 +1,49 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import type { Board, Variant } from './domain/types'
 import { useGame } from './state/useGame'
-import { ComingSoon } from './ui/ComingSoon'
 import { GameScreen } from './ui/GameScreen'
 import { HomeScreen, type HomeMode } from './ui/HomeScreen'
 import { StartScreen } from './ui/StartScreen'
+
+const HostFlow = lazy(() => import('./ui/mp/HostFlow').then((m) => ({ default: m.HostFlow })))
+const JoinFlow = lazy(() => import('./ui/mp/JoinFlow').then((m) => ({ default: m.JoinFlow })))
+
+function Loading() {
+  return (
+    <div className="flex min-h-full items-center justify-center text-sm text-muted">Loading…</div>
+  )
+}
 
 export default function App() {
   const game = useGame()
   const [screen, setScreen] = useState<'home' | HomeMode>('home')
 
-  // A game in progress always takes over (single-player resume).
+  // A single-player game in progress always takes over.
   if (game.session && game.board) {
     return <GameScreen game={game} />
   }
 
   const start = (board: Board, variant: Variant) => {
-    setScreen('home') // so leaving the game returns here
+    setScreen('home')
     game.start(board, variant)
   }
 
+  const goHome = () => setScreen('home')
+
   switch (screen) {
     case 'single':
-      return <StartScreen onStart={start} onBack={() => setScreen('home')} />
+      return <StartScreen onStart={start} onBack={goHome} />
     case 'host':
       return (
-        <ComingSoon
-          title="Host a game"
-          blurb="Multiplayer is on the way. You'll host a game and other players scan a code to join — over your Wi-Fi or personal hotspot, no internet needed."
-          onBack={() => setScreen('home')}
-        />
+        <Suspense fallback={<Loading />}>
+          <HostFlow onExit={goHome} />
+        </Suspense>
       )
     case 'join':
       return (
-        <ComingSoon
-          title="Join a game"
-          blurb="Multiplayer is on the way. You'll scan the host's code to join their game and see everyone's net worth live."
-          onBack={() => setScreen('home')}
-        />
+        <Suspense fallback={<Loading />}>
+          <JoinFlow onExit={goHome} />
+        </Suspense>
       )
     default:
       return <HomeScreen onSelect={setScreen} />
