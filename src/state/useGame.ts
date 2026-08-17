@@ -25,22 +25,32 @@ export interface UseGame {
   clearError: () => void
 }
 
-export function useGame(): UseGame {
-  const [session, setSession] = useState<GameSession | null>(() => loadSession())
+export interface UseGameOptions {
+  /**
+   * Persist to localStorage (default true). Multiplayer games pass false so
+   * they don't touch the single-player save and vanish on reload.
+   */
+  persist?: boolean
+}
+
+export function useGame(options?: UseGameOptions): UseGame {
+  const persist = options?.persist ?? true
+  const [session, setSession] = useState<GameSession | null>(() => (persist ? loadSession() : null))
   const [error, setError] = useState<string | null>(null)
   const board = session ? getBoard(session.present.boardId) : undefined
   const variant = session ? getVariant(session.present.variantId) : undefined
 
-  // Persist whenever the session changes.
+  // Persist whenever the session changes (single-player only).
   const firstRun = useRef(true)
   useEffect(() => {
+    if (!persist) return
     if (firstRun.current) {
       firstRun.current = false
       if (session) return // don't rewrite what we just loaded
     }
     if (session) saveSession(session)
     else clearSession()
-  }, [session])
+  }, [session, persist])
 
   const start = useCallback((b: Board, v: Variant) => {
     setError(null)

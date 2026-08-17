@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { genId, playerColor, ZERO_WORTH } from '../net/identity'
 import { HostRoom, JoinClient } from '../net/room'
-import type { PlayerInfo, RosterEntry } from '../net/protocol'
+import type { PlayerInfo, PlayerWorth, RosterEntry } from '../net/protocol'
 
 export type MpRole = 'host' | 'client'
 
@@ -24,6 +24,7 @@ export interface UseMultiplayer {
   startJoin: (name: string) => void
   acceptInvite: (offerCode: string) => Promise<string>
   // both
+  sendWorth: (worth: PlayerWorth) => void
   leave: () => void
 }
 
@@ -82,6 +83,11 @@ export function useMultiplayer(): UseMultiplayer {
     return clientRef.current.acceptInvite(offerCode)
   }, [])
 
+  const sendWorth = useCallback((worth: PlayerWorth) => {
+    hostRef.current?.setHostWorth(worth)
+    clientRef.current?.sendWorth(worth)
+  }, [])
+
   const leave = useCallback(() => {
     hostRef.current?.close()
     clientRef.current?.close()
@@ -105,6 +111,7 @@ export function useMultiplayer(): UseMultiplayer {
     completeInvite,
     startJoin,
     acceptInvite,
+    sendWorth,
     leave,
   }
 }

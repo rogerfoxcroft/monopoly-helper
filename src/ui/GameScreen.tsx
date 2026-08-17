@@ -3,9 +3,11 @@ import type { GameSession, Variant } from '../domain/types'
 import type { UseGame } from '../state/useGame'
 import { useTheme, type ThemePref } from '../state/theme'
 import { canUndo as canUndoSession } from '../domain/reducer'
+import type { RosterEntry } from '../net/protocol'
 import { CashPanel } from './CashPanel'
 import { ConfirmDialog } from './ConfirmDialog'
 import { HistorySheet } from './HistorySheet'
+import { Leaderboard } from './mp/Leaderboard'
 import { NetWorthHeader } from './NetWorthHeader'
 import { PropertyList } from './PropertyList'
 import { Sheet } from './Sheet'
@@ -14,7 +16,12 @@ import { WealthTaxPanel } from './WealthTaxPanel'
 
 type Dialog = null | 'menu' | 'history' | 'variants' | 'reset' | 'quit'
 
-export function GameScreen({ game }: { game: UseGame }) {
+export interface MultiplayerView {
+  roster: RosterEntry[]
+  meId: string
+}
+
+export function GameScreen({ game, multiplayer }: { game: UseGame; multiplayer?: MultiplayerView }) {
   const { board, variant, error, start, dispatch, undo, reset, quit, clearError } = game
   const session = game.session as GameSession
   const [dialog, setDialog] = useState<Dialog>(null)
@@ -42,8 +49,14 @@ export function GameScreen({ game }: { game: UseGame }) {
         onMenu={() => setDialog('menu')}
       />
 
+      {multiplayer && (
+        <div className="py-3">
+          <Leaderboard roster={multiplayer.roster} board={board} meId={multiplayer.meId} />
+        </div>
+      )}
+
       <CashPanel board={board} state={session.present} variant={variant} dispatch={dispatch} />
-      {variant.wealthTax && (
+      {variant.wealthTax && !multiplayer && (
         <WealthTaxPanel board={board} state={session.present} variant={variant} />
       )}
       <PropertyList board={board} holdings={session.present.holdings} dispatch={dispatch} />
@@ -64,11 +77,9 @@ export function GameScreen({ game }: { game: UseGame }) {
           <ThemeToggle value={theme} onChange={setTheme} />
         </div>
         <div className="flex flex-col gap-2">
-          <MenuItem
-            label="Variants"
-            detail={variant.name}
-            onClick={() => setDialog('variants')}
-          />
+          {!multiplayer && (
+            <MenuItem label="Variants" detail={variant.name} onClick={() => setDialog('variants')} />
+          )}
           <MenuItem label="Activity log" onClick={() => setDialog('history')} />
           <MenuItem label="Reset game" onClick={() => setDialog('reset')} />
           <MenuItem label="Leave game" onClick={() => setDialog('quit')} />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { boards } from '../../boards'
 import { variants } from '../../variants'
-import { useMultiplayer, type UseMultiplayer } from '../../state/useMultiplayer'
+import type { UseMultiplayer } from '../../state/useMultiplayer'
 import { BackBar } from '../BackBar'
 import { Sheet } from '../Sheet'
 import { QrCode } from './QrCode'
@@ -9,24 +9,20 @@ import { QrScanner } from './QrScanner'
 import { RosterList } from './RosterList'
 
 interface HostFlowProps {
+  mp: UseMultiplayer
   onExit: () => void
+  onStart: (boardId: string, variantId: string) => void
 }
 
-export function HostFlow({ onExit }: HostFlowProps) {
-  const mp = useMultiplayer()
+export function HostFlow({ mp, onExit, onStart }: HostFlowProps) {
   const [name, setName] = useState('')
   const [boardId, setBoardId] = useState(boards[0].id)
   const [variantId, setVariantId] = useState(variants[0].id)
 
-  const exit = () => {
-    mp.leave()
-    onExit()
-  }
-
   if (mp.role !== 'host') {
     return (
       <main className="mx-auto flex min-h-full max-w-md flex-col px-5 py-6">
-        <BackBar title="Host a game" onBack={exit} />
+        <BackBar title="Host a game" onBack={onExit} />
         <div className="mt-6 flex flex-col gap-6">
           <Field label="Your name">
             <input
@@ -57,16 +53,24 @@ export function HostFlow({ onExit }: HostFlowProps) {
     )
   }
 
-  return <HostLobby mp={mp} onExit={exit} />
+  return <HostLobby mp={mp} onExit={onExit} onStart={() => onStart(boardId, variantId)} />
 }
 
-function HostLobby({ mp, onExit }: { mp: UseMultiplayer; onExit: () => void }) {
+function HostLobby({
+  mp,
+  onExit,
+  onStart,
+}: {
+  mp: UseMultiplayer
+  onExit: () => void
+  onStart: () => void
+}) {
   const [adding, setAdding] = useState(false)
   return (
     <main className="mx-auto flex min-h-full max-w-md flex-col px-5 py-6">
       <BackBar title="Lobby" onBack={onExit} />
       <p className="mt-2 mb-5 text-sm text-muted">
-        Players on your Wi-Fi or hotspot can join by scanning your code.
+        Players on your Wi-Fi or hotspot join by scanning your code. Add everyone, then start.
       </p>
 
       <div className="mb-4">
@@ -83,9 +87,12 @@ function HostLobby({ mp, onExit }: { mp: UseMultiplayer; onExit: () => void }) {
         + Add player
       </button>
 
-      <p className="mt-auto pt-8 text-center text-xs text-faint">
-        Live gameplay sync (leaderboard &amp; wealth tax) arrives in the next update.
-      </p>
+      <button
+        onClick={onStart}
+        className="mt-3 w-full rounded-xl bg-emerald-600 py-3.5 font-semibold text-white active:bg-emerald-500"
+      >
+        Start game
+      </button>
 
       <AddPlayerSheet open={adding} mp={mp} onClose={() => setAdding(false)} />
     </main>

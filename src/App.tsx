@@ -5,8 +5,9 @@ import { GameScreen } from './ui/GameScreen'
 import { HomeScreen, type HomeMode } from './ui/HomeScreen'
 import { StartScreen } from './ui/StartScreen'
 
-const HostFlow = lazy(() => import('./ui/mp/HostFlow').then((m) => ({ default: m.HostFlow })))
-const JoinFlow = lazy(() => import('./ui/mp/JoinFlow').then((m) => ({ default: m.JoinFlow })))
+const Multiplayer = lazy(() =>
+  import('./ui/mp/Multiplayer').then((m) => ({ default: m.Multiplayer })),
+)
 
 function Loading() {
   return (
@@ -36,13 +37,13 @@ export default function App() {
     case 'host':
       return (
         <Suspense fallback={<Loading />}>
-          <HostFlow onExit={goHome} />
+          <Multiplayer mode="host" onExit={goHome} />
         </Suspense>
       )
     case 'join':
       return (
         <Suspense fallback={<Loading />}>
-          <JoinFlow onExit={goHome} />
+          <Multiplayer mode="join" onExit={goHome} />
         </Suspense>
       )
     default:
