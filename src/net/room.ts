@@ -43,6 +43,7 @@ export class HostRoom {
     this.pending?.close()
     const peer = new Peer({
       onMessage: (d) => this.onPeerMessage(peer, d),
+      onStateChange: () => this.broadcast(), // update connected/offline dots
       onClose: () => this.removePeer(peer),
     })
     this.pending = peer
