@@ -47,6 +47,9 @@ export function GameScreen({
   const canUndo = canUndoSession(session)
   const wide = useMediaQuery('(min-width: 1024px)')
   const wideDashboard = !!multiplayer && wide
+  const isHost =
+    !!multiplayer && (multiplayer.roster.find((p) => p.id === multiplayer.meId)?.isHost ?? false)
+  const leaveLabel = isHost ? 'End game' : 'Leave game'
 
   // Auto-dismiss error toasts.
   useEffect(() => {
@@ -118,7 +121,7 @@ export function GameScreen({
           )}
           <MenuItem label="Activity log" onClick={() => setDialog('history')} />
           <MenuItem label="Reset game" onClick={() => setDialog('reset')} />
-          <MenuItem label="Leave game" onClick={() => setDialog('quit')} />
+          <MenuItem label={leaveLabel} onClick={() => setDialog('quit')} />
         </div>
       </Sheet>
 
@@ -172,9 +175,13 @@ export function GameScreen({
 
       <ConfirmDialog
         open={dialog === 'quit'}
-        title="Leave game?"
-        message="This ends the current game and returns to the main menu. Your current game will be lost."
-        confirmLabel="Leave game"
+        title={isHost ? 'End game?' : `${leaveLabel}?`}
+        message={
+          isHost
+            ? 'This ends the game for everyone and returns you to the main menu.'
+            : 'This ends the current game and returns to the main menu. Your current game will be lost.'
+        }
+        confirmLabel={leaveLabel}
         danger
         onConfirm={() => {
           quit()

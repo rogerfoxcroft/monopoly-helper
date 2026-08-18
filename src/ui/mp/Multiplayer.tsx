@@ -5,6 +5,7 @@ import { computeWorth } from '../../domain/networth'
 import { computeRoundTax } from '../../domain/wealthtax'
 import { useGame } from '../../state/useGame'
 import { useMultiplayer } from '../../state/useMultiplayer'
+import { useWakeLock } from '../../state/useWakeLock'
 import { GameScreen, type HostTaxView } from '../GameScreen'
 import { HostFlow } from './HostFlow'
 import { JoinFlow } from './JoinFlow'
@@ -23,6 +24,10 @@ export function Multiplayer({ mode, onExit }: MultiplayerProps) {
   const mp = useMultiplayer()
   const game = useGame({ persist: false })
   const { sendState } = mp
+
+  // Keep the screen awake during a multiplayer game so it doesn't sleep and
+  // drop the WebRTC connection.
+  useWakeLock(mp.role !== null)
 
   // Joiner: start the local game once the host welcomes us with the rules.
   useEffect(() => {
