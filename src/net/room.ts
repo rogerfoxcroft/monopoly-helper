@@ -107,6 +107,10 @@ export class HostRoom {
       return
     }
     if (msg.t === 'hello') {
+      // A reconnecting player reuses their id — drop their stale peer and
+      // re-associate the fresh one so they merge rather than duplicate.
+      const existing = this.peers.get(msg.player.id)
+      if (existing && existing.peer !== peer) existing.peer.close()
       this.peers.set(msg.player.id, {
         peer,
         info: msg.player,
@@ -178,6 +182,10 @@ export class JoinClient {
           }),
         ),
       onMessage: (d) => this.onHostMessage(d),
+      onStateChange: (state) => {
+        // 'disconnected' can be transient; only react to terminal states.
+        if (state === 'failed' || state === 'closed') this.cb.onClose()
+      },
       onClose: () => this.cb.onClose(),
     })
   }

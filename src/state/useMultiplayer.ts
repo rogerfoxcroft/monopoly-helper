@@ -30,6 +30,8 @@ export interface UseMultiplayer {
   // client
   startJoin: (name: string) => void
   acceptInvite: (offerCode: string) => Promise<string>
+  /** Rebuild the connection (same identity) after a drop; then rescan. */
+  reconnect: () => void
   // both
   sendState: (worth: PlayerWorth, holdings: Holding[]) => void
   leave: () => void
@@ -50,6 +52,7 @@ export function useMultiplayer(): UseMultiplayer {
   const hostRef = useRef<HostRoom | null>(null)
   const clientRef = useRef<JoinClient | null>(null)
   const taxSeq = useRef(0)
+  const joinInfoRef = useRef<PlayerInfo | null>(null)
 
   const startHost = useCallback((name: string, boardId: string, variantId: string) => {
     const info: PlayerInfo = { id: genId(), name: name.trim() || 'Host', color: playerColor(0) }
@@ -71,12 +74,9 @@ export function useMultiplayer(): UseMultiplayer {
     return hostRef.current.completeInvite(answerCode)
   }, [])
 
-  const startJoin = useCallback((name: string) => {
-    const info: PlayerInfo = {
-      id: genId(),
-      name: name.trim() || 'Player',
-      color: playerColor(1 + Math.floor(Math.random() * 5)),
-    }
+  // Create a JoinClient (fresh WebRTC peer) for the given identity, wiring the
+  // standard callbacks. Used for the initial join and for reconnecting.
+  const createClient = useCallback((info: PlayerInfo) => {
     const client = new JoinClient(info, ZERO_WORTH, [], {
       onWelcome: (boardId, variantId) => {
         setWelcome({ boardId, variantId })
@@ -90,9 +90,32 @@ export function useMultiplayer(): UseMultiplayer {
       onClose: () => setConnected(false),
     })
     clientRef.current = client
-    setMe(info)
-    setRole('client')
   }, [])
+
+  const startJoin = useCallback(
+    (name: string) => {
+      const info: PlayerInfo = {
+        id: genId(),
+        name: name.trim() || 'Player',
+        color: playerColor(1 + Math.floor(Math.random() * 5)),
+      }
+      joinInfoRef.current = info
+      createClient(info)
+      setMe(info)
+      setRole('client')
+    },
+    [createClient],
+  )
+
+  // Recreate the connection after a drop, keeping the same identity so the host
+  // re-associates us. The caller then re-runs the QR handshake (rescan).
+  const reconnect = useCallback(() => {
+    const info = joinInfoRef.current
+    if (!info) return
+    clientRef.current?.close()
+    setConnected(false)
+    createClient(info)
+  }, [createClient])
 
   const acceptInvite = useCallback((offerCode: string) => {
     if (!clientRef.current) throw new Error('Not joining')
@@ -131,6 +154,7 @@ export function useMultiplayer(): UseMultiplayer {
     completeInvite,
     startJoin,
     acceptInvite,
+    reconnect,
     sendState,
     leave,
     applyHostTax,

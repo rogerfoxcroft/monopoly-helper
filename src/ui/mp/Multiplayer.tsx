@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { getBoard } from '../../boards'
 import { getVariant } from '../../variants'
 import { computeWorth } from '../../domain/networth'
@@ -7,8 +7,10 @@ import { useGame } from '../../state/useGame'
 import { useMultiplayer } from '../../state/useMultiplayer'
 import { useWakeLock } from '../../state/useWakeLock'
 import { GameScreen, type HostTaxView } from '../GameScreen'
+import { AddPlayerSheet } from './AddPlayerSheet'
 import { HostFlow } from './HostFlow'
 import { JoinFlow } from './JoinFlow'
+import { ReconnectFlow } from './ReconnectFlow'
 
 interface MultiplayerProps {
   mode: 'host' | 'join'
@@ -24,6 +26,7 @@ export function Multiplayer({ mode, onExit }: MultiplayerProps) {
   const mp = useMultiplayer()
   const game = useGame({ persist: false })
   const { sendState } = mp
+  const [addingPlayer, setAddingPlayer] = useState(false)
 
   // Keep the screen awake during a multiplayer game so it doesn't sleep and
   // drop the WebRTC connection.
@@ -38,14 +41,16 @@ export function Multiplayer({ mode, onExit }: MultiplayerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mp.welcome])
 
-  // Broadcast our worth and holdings whenever the local game changes.
+  // Broadcast our worth and holdings whenever the local game changes, and again
+  // whenever we (re)connect so a rejoining player resyncs immediately.
+  const connected = mp.connected
   useEffect(() => {
-    if (!game.session || !game.board) return
+    if (!game.session || !game.board || !connected) return
     const holdings = game.session.present.holdings
     const w = computeWorth(game.board, game.session.present)
     sendState({ ...w, ownsProperty: holdings.length > 0 }, holdings)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.session, sendState])
+  }, [game.session, sendState, connected])
 
   // Client: apply a wealth-tax delta pushed by the host (undoable adjustCash).
   const taxSeq = mp.pendingTax?.seq
@@ -62,6 +67,12 @@ export function Multiplayer({ mode, onExit }: MultiplayerProps) {
   }
 
   if (game.session && game.board) {
+    // A client whose connection to the host dropped: offer to rescan and rejoin
+    // (their local game is untouched).
+    if (mode === 'join' && !connected) {
+      return <ReconnectFlow mp={mp} onExit={exit} />
+    }
+
     const gameWithLeave = { ...game, quit: exit }
 
     // Host-only wealth-tax control, computed live from the roster.
@@ -84,11 +95,17 @@ export function Multiplayer({ mode, onExit }: MultiplayerProps) {
     }
 
     return (
-      <GameScreen
-        game={gameWithLeave}
-        multiplayer={{ roster: mp.roster, meId: mp.me?.id ?? '' }}
-        hostTax={hostTax}
-      />
+      <>
+        <GameScreen
+          game={gameWithLeave}
+          multiplayer={{ roster: mp.roster, meId: mp.me?.id ?? '' }}
+          hostTax={hostTax}
+          onAddPlayer={mp.role === 'host' ? () => setAddingPlayer(true) : undefined}
+        />
+        {mp.role === 'host' && (
+          <AddPlayerSheet open={addingPlayer} mp={mp} onClose={() => setAddingPlayer(false)} />
+        )}
+      </>
     )
   }
 

@@ -34,10 +34,12 @@ export function GameScreen({
   game,
   multiplayer,
   hostTax,
+  onAddPlayer,
 }: {
   game: UseGame
   multiplayer?: MultiplayerView
   hostTax?: HostTaxView
+  onAddPlayer?: () => void
 }) {
   const { board, variant, error, start, dispatch, undo, reset, quit, clearError } = game
   const session = game.session as GameSession
@@ -118,6 +120,15 @@ export function GameScreen({
         <div className="flex flex-col gap-2">
           {!multiplayer && (
             <MenuItem label="Variants" detail={variant.name} onClick={() => setDialog('variants')} />
+          )}
+          {onAddPlayer && (
+            <MenuItem
+              label="Add player"
+              onClick={() => {
+                onAddPlayer()
+                setDialog(null)
+              }}
+            />
           )}
           <MenuItem label="Activity log" onClick={() => setDialog('history')} />
           <MenuItem label="Reset game" onClick={() => setDialog('reset')} />
