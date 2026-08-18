@@ -78,6 +78,11 @@ export function HomeScreen({ onSelect }: HomeScreenProps) {
       <p className="mt-auto pt-10 text-center text-xs text-faint">
         Your game saves automatically on this device.
       </p>
+      <p className="pt-2 text-center">
+        <a href={`${import.meta.env.BASE_URL}?reset`} className="text-xs text-faint underline">
+          Reset app data
+        </a>
+      </p>
     </main>
   )
 }
