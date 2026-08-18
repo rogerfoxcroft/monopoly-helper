@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { genId, playerColor, ZERO_WORTH } from '../net/identity'
 import { HostRoom, JoinClient } from '../net/room'
 import type { PlayerInfo, PlayerWorth, RosterEntry } from '../net/protocol'
+import type { Holding } from '../domain/types'
 
 export type MpRole = 'host' | 'client'
 
@@ -30,7 +31,7 @@ export interface UseMultiplayer {
   startJoin: (name: string) => void
   acceptInvite: (offerCode: string) => Promise<string>
   // both
-  sendWorth: (worth: PlayerWorth) => void
+  sendState: (worth: PlayerWorth, holdings: Holding[]) => void
   leave: () => void
   // host: send per-player tax deltas; returns the host's own delta
   applyHostTax: (deltas: Map<string, number>, label: string) => number
@@ -76,7 +77,7 @@ export function useMultiplayer(): UseMultiplayer {
       name: name.trim() || 'Player',
       color: playerColor(1 + Math.floor(Math.random() * 5)),
     }
-    const client = new JoinClient(info, ZERO_WORTH, {
+    const client = new JoinClient(info, ZERO_WORTH, [], {
       onWelcome: (boardId, variantId) => {
         setWelcome({ boardId, variantId })
         setConnected(true)
@@ -98,9 +99,9 @@ export function useMultiplayer(): UseMultiplayer {
     return clientRef.current.acceptInvite(offerCode)
   }, [])
 
-  const sendWorth = useCallback((worth: PlayerWorth) => {
-    hostRef.current?.setHostWorth(worth)
-    clientRef.current?.sendWorth(worth)
+  const sendState = useCallback((worth: PlayerWorth, holdings: Holding[]) => {
+    hostRef.current?.setHostState(worth, holdings)
+    clientRef.current?.sendState(worth, holdings)
   }, [])
 
   const applyHostTax = useCallback((deltas: Map<string, number>, label: string) => {
@@ -130,7 +131,7 @@ export function useMultiplayer(): UseMultiplayer {
     completeInvite,
     startJoin,
     acceptInvite,
-    sendWorth,
+    sendState,
     leave,
     applyHostTax,
     pendingTax,
