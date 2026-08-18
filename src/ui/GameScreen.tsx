@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { GameSession, Variant } from '../domain/types'
 import type { UseGame } from '../state/useGame'
+import { useMediaQuery } from '../state/useMediaQuery'
 import { useTheme, type ThemePref } from '../state/theme'
 import { canUndo as canUndoSession } from '../domain/reducer'
 import type { RosterEntry } from '../net/protocol'
@@ -9,6 +10,7 @@ import { CashPanel } from './CashPanel'
 import { ConfirmDialog } from './ConfirmDialog'
 import { HistorySheet } from './HistorySheet'
 import { Leaderboard } from './mp/Leaderboard'
+import { MultiplayerColumns } from './mp/MultiplayerColumns'
 import { WealthTaxHostPanel } from './mp/WealthTaxHostPanel'
 import { NetWorthHeader } from './NetWorthHeader'
 import { PropertyList } from './PropertyList'
@@ -43,6 +45,8 @@ export function GameScreen({
   const [pendingVariant, setPendingVariant] = useState<Variant | null>(null)
   const [theme, setTheme] = useTheme()
   const canUndo = canUndoSession(session)
+  const wide = useMediaQuery('(min-width: 1024px)')
+  const wideDashboard = !!multiplayer && wide
 
   // Auto-dismiss error toasts.
   useEffect(() => {
@@ -64,18 +68,34 @@ export function GameScreen({
         onMenu={() => setDialog('menu')}
       />
 
-      {multiplayer && (
-        <div className="py-3">
-          <Leaderboard roster={multiplayer.roster} board={board} meId={multiplayer.meId} />
-        </div>
-      )}
-      {hostTax && <WealthTaxHostPanel board={board} preview={hostTax.preview} onApply={hostTax.apply} />}
+      {wideDashboard ? (
+        <MultiplayerColumns
+          board={board}
+          variant={variant}
+          session={session.present}
+          dispatch={dispatch}
+          roster={multiplayer!.roster}
+          meId={multiplayer!.meId}
+          hostTax={hostTax}
+        />
+      ) : (
+        <>
+          {multiplayer && (
+            <div className="py-3">
+              <Leaderboard roster={multiplayer.roster} board={board} meId={multiplayer.meId} />
+            </div>
+          )}
+          {hostTax && (
+            <WealthTaxHostPanel board={board} preview={hostTax.preview} onApply={hostTax.apply} />
+          )}
 
-      <CashPanel board={board} state={session.present} variant={variant} dispatch={dispatch} />
-      {variant.wealthTax && !multiplayer && (
-        <WealthTaxPanel board={board} state={session.present} variant={variant} />
+          <CashPanel board={board} state={session.present} variant={variant} dispatch={dispatch} />
+          {variant.wealthTax && !multiplayer && (
+            <WealthTaxPanel board={board} state={session.present} variant={variant} />
+          )}
+          <PropertyList board={board} holdings={session.present.holdings} dispatch={dispatch} />
+        </>
       )}
-      <PropertyList board={board} holdings={session.present.holdings} dispatch={dispatch} />
 
       {/* Error toast */}
       {error && (

@@ -22,7 +22,7 @@ interface MultiplayerProps {
 export function Multiplayer({ mode, onExit }: MultiplayerProps) {
   const mp = useMultiplayer()
   const game = useGame({ persist: false })
-  const { sendWorth } = mp
+  const { sendState } = mp
 
   // Joiner: start the local game once the host welcomes us with the rules.
   useEffect(() => {
@@ -33,13 +33,14 @@ export function Multiplayer({ mode, onExit }: MultiplayerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mp.welcome])
 
-  // Broadcast our worth whenever the local game changes.
+  // Broadcast our worth and holdings whenever the local game changes.
   useEffect(() => {
     if (!game.session || !game.board) return
+    const holdings = game.session.present.holdings
     const w = computeWorth(game.board, game.session.present)
-    sendWorth({ ...w, ownsProperty: game.session.present.holdings.length > 0 })
+    sendState({ ...w, ownsProperty: holdings.length > 0 }, holdings)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.session, sendWorth])
+  }, [game.session, sendState])
 
   // Client: apply a wealth-tax delta pushed by the host (undoable adjustCash).
   const taxSeq = mp.pendingTax?.seq

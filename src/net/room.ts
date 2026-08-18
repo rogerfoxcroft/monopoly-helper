@@ -1,6 +1,7 @@
 import { Peer } from './peer'
 import { shortCode } from './identity'
 import { packSignal, unpackSignal } from './signaling'
+import type { Holding } from '../domain/types'
 import {
   decodeMessage,
   encodeMessage,
@@ -16,10 +17,18 @@ import {
  * merges everyone's worth into a roster, and broadcasts it back (star relay).
  * The host is itself a player.
  */
+interface PeerState {
+  peer: Peer
+  info: PlayerInfo
+  worth: PlayerWorth
+  holdings: Holding[]
+}
+
 export class HostRoom {
   readonly room = shortCode()
-  private peers = new Map<string, { peer: Peer; info: PlayerInfo; worth: PlayerWorth }>()
+  private peers = new Map<string, PeerState>()
   private pending?: Peer
+  private hostHoldings: Holding[] = []
 
   constructor(
     private host: PlayerInfo,
@@ -51,9 +60,10 @@ export class HostRoom {
     await peer.acceptAnswer(sig.sdp)
   }
 
-  /** Update the host's own worth and rebroadcast. */
-  setHostWorth(worth: PlayerWorth): void {
+  /** Update the host's own worth and holdings, then rebroadcast. */
+  setHostState(worth: PlayerWorth, holdings: Holding[]): void {
     this.hostWorth = worth
+    this.hostHoldings = holdings
     this.broadcast()
   }
 
@@ -68,12 +78,13 @@ export class HostRoom {
 
   roster(): RosterEntry[] {
     const list: RosterEntry[] = [
-      { ...this.host, worth: this.hostWorth, connected: true, isHost: true },
+      { ...this.host, worth: this.hostWorth, holdings: this.hostHoldings, connected: true, isHost: true },
     ]
     for (const e of this.peers.values()) {
       list.push({
         ...e.info,
         worth: e.worth,
+        holdings: e.holdings,
         connected: e.peer.connectionState === 'connected',
         isHost: false,
       })
@@ -95,7 +106,12 @@ export class HostRoom {
       return
     }
     if (msg.t === 'hello') {
-      this.peers.set(msg.player.id, { peer, info: msg.player, worth: msg.worth })
+      this.peers.set(msg.player.id, {
+        peer,
+        info: msg.player,
+        worth: msg.worth,
+        holdings: msg.holdings,
+      })
       peer.send(
         encodeMessage({
           t: 'welcome',
@@ -107,7 +123,10 @@ export class HostRoom {
       this.broadcast()
     } else if (msg.t === 'worth') {
       for (const e of this.peers.values()) {
-        if (e.peer === peer) e.worth = msg.worth
+        if (e.peer === peer) {
+          e.worth = msg.worth
+          e.holdings = msg.holdings
+        }
       }
       this.broadcast()
     } else if (msg.t === 'bye') {
@@ -144,11 +163,19 @@ export class JoinClient {
   constructor(
     private me: PlayerInfo,
     private myWorth: PlayerWorth,
+    private myHoldings: Holding[],
     private cb: JoinCallbacks,
   ) {
     this.peer = new Peer({
       onOpen: () =>
-        this.peer.send(encodeMessage({ t: 'hello', player: this.me, worth: this.myWorth })),
+        this.peer.send(
+          encodeMessage({
+            t: 'hello',
+            player: this.me,
+            worth: this.myWorth,
+            holdings: this.myHoldings,
+          }),
+        ),
       onMessage: (d) => this.onHostMessage(d),
       onClose: () => this.cb.onClose(),
     })
@@ -162,9 +189,10 @@ export class JoinClient {
     return packSignal({ kind: 'answer', room: sig.room, sdp: answer })
   }
 
-  sendWorth(worth: PlayerWorth): void {
+  sendState(worth: PlayerWorth, holdings: Holding[]): void {
     this.myWorth = worth
-    this.peer.send(encodeMessage({ t: 'worth', worth }))
+    this.myHoldings = holdings
+    this.peer.send(encodeMessage({ t: 'worth', worth, holdings }))
   }
 
   close(): void {

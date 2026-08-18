@@ -2,15 +2,16 @@ import { describe, expect, it } from 'vitest'
 import { decodeMessage, encodeMessage, type NetMessage } from './protocol'
 
 const worth = { cash: 1000, property: 500, buildings: 200, total: 1700, ownsProperty: true }
+const holdings = [{ propertyId: 'mayfair', mortgaged: false, buildLevel: 2 }]
 
 const samples: NetMessage[] = [
-  { t: 'hello', player: { id: 'p1', name: 'Ada', color: '#ff0000' }, worth },
-  { t: 'worth', worth },
+  { t: 'hello', player: { id: 'p1', name: 'Ada', color: '#ff0000' }, worth, holdings },
+  { t: 'worth', worth, holdings },
   { t: 'bye' },
   { t: 'welcome', youId: 'p1', boardId: 'standard-uk', variantId: 'well-regulated' },
   {
     t: 'roster',
-    players: [{ id: 'p1', name: 'Ada', color: '#f00', worth, connected: true, isHost: true }],
+    players: [{ id: 'p1', name: 'Ada', color: '#f00', worth, holdings, connected: true, isHost: true }],
   },
   { t: 'tax', delta: -200, label: 'Wealth tax' },
 ]

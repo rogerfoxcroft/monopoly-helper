@@ -1,4 +1,5 @@
 import type { WorthBreakdown } from '../domain/networth'
+import type { Holding } from '../domain/types'
 
 /**
  * The over-the-wire protocol for a multiplayer game. These messages travel on
@@ -24,14 +25,16 @@ export interface PlayerInfo {
 
 export interface RosterEntry extends PlayerInfo {
   worth: PlayerWorth
+  /** The player's owned properties (public, like the physical board). */
+  holdings: Holding[]
   connected: boolean
   isHost: boolean
 }
 
 /** Client → host. */
 export type ClientMessage =
-  | { t: 'hello'; player: PlayerInfo; worth: PlayerWorth }
-  | { t: 'worth'; worth: PlayerWorth }
+  | { t: 'hello'; player: PlayerInfo; worth: PlayerWorth; holdings: Holding[] }
+  | { t: 'worth'; worth: PlayerWorth; holdings: Holding[] }
   | { t: 'bye' }
 
 /** Host → client. */
